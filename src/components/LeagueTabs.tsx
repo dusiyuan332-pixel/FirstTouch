@@ -1,160 +1,150 @@
 "use client";
 
 import { useState } from "react";
-import { LEAGUES_2027, daysUntil, formatFixtureDate, type LeagueInfo } from "@/data/leagues2027";
+import Image from "next/image";
+import type { LeagueStandings, LeagueTableRow } from "@/lib/footballDataApi";
 
-// ─── 开幕倒计时条 ─────────────────────────────────────────────────────────────
+// ─── 联赛 Tab 元数据 ──────────────────────────────────────────────────────────
 
-function OpeningBanner({ league }: { league: LeagueInfo }) {
-  const days = daysUntil(league.openingDate);
+const LEAGUE_ORDER = ["PL", "PD", "BL1", "SA", "FL1"];
+const LEAGUE_LABELS: Record<string, string> = {
+  PL: "英超", PD: "西甲", BL1: "德甲", SA: "意甲", FL1: "法甲",
+};
+
+// ─── 积分榜行 ─────────────────────────────────────────────────────────────────
+
+function StandingsRow({ row, highlight }: { row: LeagueTableRow; highlight: boolean }) {
+  const posColor =
+    row.position <= 4  ? "var(--ft-blue)"  :
+    row.position <= 6  ? "rgba(0,92,56,0.8)" :
+    row.position >= 18 ? "var(--ft-red)"   : "var(--ft-text-muted)";
+
   return (
     <div
-      className="mb-4 flex items-center justify-between px-5 py-4"
+      className="flex items-center gap-3 px-4 py-2.5 ft-row-hover"
       style={{
-        border: "1px solid var(--ft-border)",
-        backgroundColor: "var(--ft-bg-section)",
-        borderLeft: "3px solid var(--ft-navy)",
+        borderBottom: "1px solid var(--ft-divider)",
+        backgroundColor: highlight ? "rgba(0,40,85,0.04)" : undefined,
       }}
     >
-      <div>
-        <p className="text-sm font-semibold" style={{ color: "var(--ft-navy)" }}>
-          {league.nameEn} 2026/27
-        </p>
-        <p className="ft-label mt-1">开幕日 · {formatFixtureDate(league.openingDate)}</p>
-      </div>
-      <div className="text-right">
-        {days > 0 ? (
-          <>
-            <p className="font-mono text-2xl font-black" style={{ color: "var(--ft-navy)" }}>{days}</p>
-            <p className="ft-label">天后开赛</p>
-          </>
-        ) : (
-          <span
-            className="font-mono text-[10px] font-bold px-3 py-1.5 uppercase tracking-wider"
-            style={{
-              backgroundColor: "rgba(0,92,56,0.08)",
-              color: "var(--ft-green)",
-              border: "1px solid rgba(0,92,56,0.15)",
-            }}
-          >
-            赛季进行中
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── 单场赛程行 ───────────────────────────────────────────────────────────────
-
-function FixtureRow({ fixture, showDate }: { fixture: LeagueInfo["fixtures"][0]; showDate: boolean }) {
-  return (
-    <div
-      className="flex items-center gap-3 px-5 py-3 ft-row-hover"
-      style={{ borderBottom: "1px solid var(--ft-divider)" }}
-    >
-      <div className="w-20 shrink-0 text-right">
-        {showDate ? (
-          <span className="font-mono text-[10px]" style={{ color: "var(--ft-text-muted)" }}>
-            {formatFixtureDate(fixture.date)}
-          </span>
-        ) : (
-          <span className="ft-label">—</span>
-        )}
-      </div>
-      <span className="flex-1 text-right text-[13px] font-medium" style={{ color: "var(--ft-navy)" }}>
-        {fixture.homeTeam}
+      {/* 排名 */}
+      <span
+        className="w-6 shrink-0 text-center font-mono text-[11px] font-bold"
+        style={{ color: posColor }}
+      >
+        {row.position}
       </span>
-      <div className="flex w-24 shrink-0 flex-col items-center gap-0.5">
-        <span className="ft-label">VS</span>
-        <span className="font-mono text-[10px]" style={{ color: "var(--ft-text-muted)" }}>
-          {fixture.time} UTC
+
+      {/* 队徽 + 队名 */}
+      <div className="flex flex-1 items-center gap-2 min-w-0">
+        {row.team.crest ? (
+          <div className="relative h-5 w-5 shrink-0">
+            <Image src={row.team.crest} alt={row.team.tla} fill className="object-contain" sizes="20px" />
+          </div>
+        ) : (
+          <div className="h-5 w-5 shrink-0 flex items-center justify-center font-mono text-[8px]"
+            style={{ backgroundColor: "var(--ft-bg-panel)", border: "1px solid var(--ft-border)", color: "var(--ft-text-muted)" }}>
+            {row.team.tla}
+          </div>
+        )}
+        <span className="truncate text-[13px] font-medium" style={{ color: "var(--ft-navy)" }}>
+          {row.team.shortName || row.team.name}
         </span>
       </div>
-      <span className="flex-1 text-[13px] font-medium" style={{ color: "var(--ft-navy)" }}>
-        {fixture.awayTeam}
+
+      {/* 数据列 */}
+      {[row.playedGames, row.won, row.draw, row.lost].map((v, i) => (
+        <span key={i} className="w-7 shrink-0 text-center font-mono text-[12px]"
+          style={{ color: "var(--ft-text-muted)" }}>{v}</span>
+      ))}
+      <span className="w-10 shrink-0 text-center font-mono text-[12px]"
+        style={{ color: row.goalDifference > 0 ? "var(--ft-green)" : row.goalDifference < 0 ? "var(--ft-red)" : "var(--ft-text-muted)" }}>
+        {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
       </span>
-      <span className="w-20 shrink-0 text-right ft-label">待上线</span>
+      <span className="w-8 shrink-0 text-center font-mono text-[13px] font-bold"
+        style={{ color: "var(--ft-navy)" }}>{row.points}</span>
     </div>
   );
 }
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
-export default function LeagueTabs() {
-  const [activeCode, setActiveCode] = useState(LEAGUES_2027[0].code);
-  const active = LEAGUES_2027.find((l) => l.code === activeCode)!;
+interface LeagueTabsProps {
+  standings: LeagueStandings[];
+}
 
-  const dateGroups = active.fixtures.reduce<Record<string, typeof active.fixtures>>(
-    (acc, f) => {
-      (acc[f.date] = acc[f.date] ?? []).push(f);
-      return acc;
-    },
-    {}
+export default function LeagueTabs({ standings }: LeagueTabsProps) {
+  const ordered = LEAGUE_ORDER
+    .map((code) => standings.find((s) => s.competition.code === code))
+    .filter(Boolean) as LeagueStandings[];
+
+  const [activeCode, setActiveCode] = useState(ordered[0]?.competition.code ?? "PL");
+  const active = ordered.find((s) => s.competition.code === activeCode) ?? ordered[0];
+
+  if (!active) return (
+    <div className="py-12 text-center ft-label" style={{ border: "1px solid var(--ft-border)" }}>
+      积分榜数据加载失败 · 请检查 FOOTBALL_DATA_KEY
+    </div>
   );
-  const sortedDates = Object.keys(dateGroups).sort();
 
   return (
     <div>
       {/* Tab 栏 */}
-      <div
-        className="mb-5 flex overflow-x-auto scrollbar-none"
-        style={{ borderBottom: "1px solid var(--ft-border)" }}
-      >
-        {LEAGUES_2027.map((league) => {
-          const isActive = activeCode === league.code;
+      <div className="mb-5 flex overflow-x-auto scrollbar-none"
+        style={{ borderBottom: "1px solid var(--ft-border)" }}>
+        {ordered.map((s) => {
+          const isActive = s.competition.code === activeCode;
           return (
-            <button
-              key={league.code}
-              onClick={() => setActiveCode(league.code)}
-              className="shrink-0 px-6 py-3 text-[13px] font-medium transition-colors focus-visible:outline-none"
+            <button key={s.competition.code}
+              onClick={() => setActiveCode(s.competition.code)}
+              className="shrink-0 px-6 py-3 text-[13px] transition-colors focus-visible:outline-none"
               style={{
                 color: isActive ? "var(--ft-navy)" : "var(--ft-text-muted)",
                 borderBottom: isActive ? "2px solid var(--ft-navy)" : "2px solid transparent",
                 marginBottom: "-1px",
                 fontWeight: isActive ? 600 : 400,
-              }}
-            >
-              {league.nameZh}
+              }}>
+              {LEAGUE_LABELS[s.competition.code] ?? s.nameZh}
             </button>
           );
         })}
       </div>
 
-      {/* 开幕倒计时 */}
-      <OpeningBanner league={active} />
-
-      {/* 赛程列表 */}
+      {/* 积分表 */}
       <div style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}>
         {/* 表头 */}
-        <div
-          className="flex items-center gap-3 px-5 py-3"
-          style={{
-            borderBottom: "1px solid var(--ft-border)",
-            backgroundColor: "var(--ft-bg-section)",
-          }}
-        >
-          <span className="w-20 shrink-0 ft-label text-right">日期</span>
-          <span className="flex-1 text-right ft-label">主队</span>
-          <span className="w-24 shrink-0 text-center ft-label">开赛时间</span>
-          <span className="flex-1 ft-label">客队</span>
-          <span className="w-20 shrink-0 text-right ft-label">分析状态</span>
+        <div className="flex items-center gap-3 px-4 py-2.5"
+          style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
+          <span className="w-6 shrink-0 text-center ft-label">#</span>
+          <span className="flex-1 ft-label">球队</span>
+          {["PL", "W", "D", "L", "GD", "PTS"].map((h) => (
+            <span key={h}
+              className={`shrink-0 text-center ft-label font-semibold ${h === "GD" ? "w-10" : h === "PTS" ? "w-8" : "w-7"}`}
+              style={{ color: h === "PTS" ? "var(--ft-navy)" : undefined }}>
+              {h}
+            </span>
+          ))}
         </div>
 
-        {sortedDates.map((date) =>
-          dateGroups[date].map((fixture, i) => (
-            <FixtureRow key={fixture.id} fixture={fixture} showDate={i === 0} />
-          ))
-        )}
+        {/* 数据行 */}
+        {active.table.map((row) => (
+          <StandingsRow key={row.team.id} row={row} highlight={row.position <= 4} />
+        ))}
 
-        {/* 底部说明 */}
-        <div
-          className="px-5 py-3"
-          style={{ borderTop: "1px solid var(--ft-divider)", backgroundColor: "var(--ft-bg-section)" }}
-        >
-          <p className="ft-label">
-            2026/27 赛季预期赛程 · 开赛后由 API 实时替换 · Matchday 1 Preview
-          </p>
+        {/* 图例 */}
+        <div className="flex items-center gap-6 px-4 py-3"
+          style={{ borderTop: "1px solid var(--ft-divider)", backgroundColor: "var(--ft-bg-section)" }}>
+          {[
+            { color: "var(--ft-blue)", label: "欧冠资格" },
+            { color: "rgba(0,92,56,0.8)", label: "欧联杯" },
+            { color: "var(--ft-red)", label: "降级区" },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className="h-2 w-2 shrink-0" style={{ backgroundColor: color }} />
+              <span className="ft-label">{label}</span>
+            </div>
+          ))}
+          <span className="ml-auto ft-label">2025/26 Final · football-data.org</span>
         </div>
       </div>
     </div>

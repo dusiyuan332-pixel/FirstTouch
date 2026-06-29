@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
 import LeagueTabs from "@/components/LeagueTabs";
-import { fetchWC2026Matches, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
+import { fetchWC2026Matches, fetchTopFiveLeagues, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 
 // ─── 评级元数据（白底配色）────────────────────────────────────────────────────
@@ -215,7 +215,10 @@ function SectionHeading({
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const allWcMatches = await fetchWC2026Matches(PREDICTIONS).catch(() => []);
+  const [allWcMatches, leagueStandings] = await Promise.all([
+    fetchWC2026Matches(PREDICTIONS).catch(() => []),
+    fetchTopFiveLeagues().catch(() => []),
+  ]);
   const now = new Date();
 
   // 优先取直播中，其次取最近即将开赛的（按开赛时间 ASC）
@@ -298,18 +301,18 @@ export default async function HomePage() {
         <section>
           <SectionHeading
             label="Top 5 European Leagues · 五大联赛"
-            title="2026/27 赛季赛程预览"
-            sub="开赛后由 API 实时替换"
+            title="2025/26 赛季终榜"
+            sub="刚结束的赛季 · 最终积分榜"
             action={
               <span
                 className="font-mono text-[10px] px-3 py-1.5 uppercase tracking-wider"
                 style={{ border: "1px solid var(--ft-border)", color: "var(--ft-text-dim)" }}
               >
-                2026/27 Pre-Season
+                2025/26 Final
               </span>
             }
           />
-          <LeagueTabs />
+          <LeagueTabs standings={leagueStandings} />
         </section>
 
         {/* 底部声明 */}

@@ -270,7 +270,7 @@ export async function fetchLeagueStandings(
 ): Promise<LeagueStandings | null> {
   try {
     const data = await fdFetch<FDStandingsResponse>(
-      `/competitions/${competitionCode}/standings?season=2024`,
+      `/competitions/${competitionCode}/standings?season=2025`,
       86400
     );
     const totalStandings = data.standings.find((s) => s.type === "TOTAL");
