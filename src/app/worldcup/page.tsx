@@ -48,7 +48,7 @@ export default async function WorldCupPage() {
 
       {/* 页头 */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto max-w-5xl px-8 py-8">
+        <div className="mx-auto max-w-5xl px-4 md:px-8 py-6 md:py-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <p className="ft-label mb-2">FIFA World Cup 2026 · Match Schedule</p>
@@ -89,7 +89,7 @@ export default async function WorldCupPage() {
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-8 py-10 space-y-12">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 md:px-8 py-6 md:py-10 space-y-10 md:space-y-12">
         {visibleMatches.length > 0 ? (
           dates.map((date) => {
             const matches = byDate.get(date) ?? [];

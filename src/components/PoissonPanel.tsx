@@ -192,7 +192,7 @@ function PoissonResult({
           </div>
         </div>
 
-        <div className="px-5 py-6 space-y-6">
+        <div className="px-3 md:px-5 py-4 md:py-6 space-y-5 md:space-y-6">
           {/* λ 值条 */}
           <div>
             <div className="flex items-center gap-4 mb-2">
@@ -249,7 +249,7 @@ function PoissonResult({
           </div>
 
           {/* 最可能比分 + 评级 */}
-          <div className="flex items-center justify-between px-5 py-4" style={PANEL_STYLE}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-4" style={PANEL_STYLE}>
             <div>
               <p className="ft-label mb-1.5">最可能比分</p>
               <p className="font-mono text-3xl font-black tabular-nums" style={{ color: "var(--ft-navy)" }}>
@@ -259,7 +259,7 @@ function PoissonResult({
                 </span>
               </p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <p className="ft-label mb-1.5">模型评级</p>
               <p className="font-mono text-xl font-bold" style={{ color: ratingMeta.color }}>
                 {ratingMeta.label}
@@ -302,9 +302,9 @@ function PoissonResult({
           <span className="ft-label">Scoreline Probability Matrix · 比分概率矩阵</span>
           <span className="ft-label" style={{ color: C_GREEN }}>Poisson + Dixon-Coles</span>
         </div>
-        <div className="px-5 py-5">
-          <div className="overflow-x-auto">
-            <table className="w-full text-center text-xs border-separate border-spacing-1">
+        <div className="px-3 md:px-5 py-4 md:py-5">
+          <div className="overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0">
+            <table className="min-w-[320px] w-full text-center text-xs border-separate border-spacing-1">
               <thead>
                 <tr>
                   <th className="w-12 text-right pr-2 ft-label">

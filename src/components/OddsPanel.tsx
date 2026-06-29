@@ -49,24 +49,24 @@ function OddsRow({
         borderLeft: hasEdge ? "3px solid var(--ft-green)" : "3px solid transparent",
       }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
         <span className="text-[13px] font-semibold" style={{ color: "var(--ft-navy)" }}>
           {label}
         </span>
         <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="ft-label mb-0.5">模型概率</p>
+          <div className="text-center sm:text-right">
+            <p className="ft-label mb-0.5">模型</p>
             <p className="font-mono text-sm font-bold" style={{ color: "var(--ft-navy)" }}>
               {Math.round(modelProb * 100)}%
             </p>
           </div>
-          <div className="text-right">
-            <p className="ft-label mb-0.5">市场隐含</p>
+          <div className="text-center sm:text-right">
+            <p className="ft-label mb-0.5">市场</p>
             <p className="font-mono text-sm font-bold" style={{ color: "var(--ft-text-muted)" }}>
               {Math.round((1 / consensusOdds) * 100)}%
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-center sm:text-right">
             <p className="ft-label mb-0.5">Edge</p>
             <EdgeBadge edge={edge} />
           </div>
@@ -145,14 +145,15 @@ export default async function OddsPanel({
     <div style={{ border: "1px solid var(--ft-border)" }}>
       {/* 面板标题 */}
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
         style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}
       >
         <p className="ft-label">MARKET ODDS · 实时盘口</p>
         <div className="flex items-center gap-3">
-          <span className="ft-label">
+          <span className="ft-label hidden sm:inline">
             {bookmakers.length} 家博彩 · {odds.remainingCredits} credits 剩余
           </span>
+          <span className="ft-label sm:hidden">{bookmakers.length} 家</span>
           <span
             className="font-mono text-[9px] px-2 py-0.5 font-bold uppercase"
             style={{ backgroundColor: "rgba(0,92,56,0.08)", color: "var(--ft-green)", border: "1px solid rgba(0,92,56,0.2)" }}

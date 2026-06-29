@@ -21,7 +21,7 @@ function StandingsRow({ row, highlight }: { row: LeagueTableRow; highlight: bool
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2.5 ft-row-hover"
+      className="flex items-center gap-3 px-4 py-2.5 ft-row-hover min-w-[340px]"
       style={{
         borderBottom: "1px solid var(--ft-divider)",
         backgroundColor: highlight ? "rgba(0,40,85,0.04)" : undefined,
@@ -111,15 +111,19 @@ export default function LeagueTabs({ standings }: LeagueTabsProps) {
       </div>
 
       {/* 积分表 */}
-      <div style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}>
+      <div className="overflow-x-auto" style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}>
         {/* 表头 */}
-        <div className="flex items-center gap-3 px-4 py-2.5"
+        <div className="flex items-center gap-3 px-4 py-2.5 min-w-[340px]"
           style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
           <span className="w-6 shrink-0 text-center ft-label">#</span>
           <span className="flex-1 ft-label">球队</span>
           {["PL", "W", "D", "L", "GD", "PTS"].map((h) => (
             <span key={h}
-              className={`shrink-0 text-center ft-label font-semibold ${h === "GD" ? "w-10" : h === "PTS" ? "w-8" : "w-7"}`}
+              className={`shrink-0 text-center ft-label font-semibold ${
+                h === "GD" ? "w-10 hidden sm:inline-block" :
+                h === "PTS" ? "w-8" :
+                (h === "W" || h === "D" || h === "L") ? "w-7 hidden xs:inline-block" : "w-7"
+              }`}
               style={{ color: h === "PTS" ? "var(--ft-navy)" : undefined }}>
               {h}
             </span>
@@ -132,7 +136,7 @@ export default function LeagueTabs({ standings }: LeagueTabsProps) {
         ))}
 
         {/* 图例 */}
-        <div className="flex items-center gap-6 px-4 py-3"
+        <div className="flex flex-wrap items-center gap-4 md:gap-6 px-4 py-3 min-w-[340px]"
           style={{ borderTop: "1px solid var(--ft-divider)", backgroundColor: "var(--ft-bg-section)" }}>
           {[
             { color: "var(--ft-blue)", label: "欧冠资格" },

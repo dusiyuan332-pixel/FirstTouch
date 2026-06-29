@@ -23,22 +23,22 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
       }}
       className="sticky top-0 z-50"
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-stretch justify-between px-8">
+      <div className="mx-auto flex h-14 md:h-16 max-w-6xl items-stretch justify-between px-4 md:px-8">
 
         {/* 品牌 */}
         <Link
           href="/"
-          className="flex items-center gap-3 no-underline"
+          className="flex items-center gap-2 md:gap-3 no-underline"
           style={{ color: "var(--ft-navy)" }}
         >
           <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center text-[11px] font-black text-white select-none"
+            className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center text-[10px] md:text-[11px] font-black text-white select-none"
             style={{ backgroundColor: "var(--ft-navy)" }}
           >
             FT
           </div>
           <div className="flex flex-col justify-center leading-none">
-            <span className="ft-heading text-[17px] font-semibold" style={{ letterSpacing: "0.02em" }}>
+            <span className="ft-heading text-[15px] md:text-[17px] font-semibold" style={{ letterSpacing: "0.02em" }}>
               FirstTouch
             </span>
             <span className="ft-label mt-0.5 hidden sm:block">Quantitative Analytics</span>
@@ -55,7 +55,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center px-5 text-[13px] font-medium no-underline transition-colors"
+                className="flex items-center px-3 md:px-5 text-[13px] font-medium no-underline transition-colors"
                 style={{
                   color: isActive ? "var(--ft-navy)" : "var(--ft-text-muted)",
                   borderBottom: isActive ? "2px solid var(--ft-navy)" : "2px solid transparent",
@@ -68,7 +68,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
           })}
 
           {/* 分隔线 */}
-          <div className="mx-4 my-5 w-px" style={{ backgroundColor: "var(--ft-border)" }} />
+          <div className="mx-2 md:mx-4 my-4 md:my-5 w-px" style={{ backgroundColor: "var(--ft-border)" }} />
 
           {/* 登录态 */}
           <div className="flex items-center">
@@ -77,7 +77,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
             ) : (
               <SignInButton mode="modal">
                 <button
-                  className="px-4 text-[13px] font-medium transition-colors"
+                  className="px-3 md:px-4 text-[13px] font-medium transition-colors"
                   style={{ color: "var(--ft-text-muted)" }}
                 >
                   登录

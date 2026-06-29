@@ -51,8 +51,8 @@ function ReportHeader({ match, detail }: { match: DisplayMatch; detail: Detailed
       </div>
 
       {/* 对阵区 */}
-      <div className="px-6 py-8">
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+      <div className="px-4 md:px-6 py-6 md:py-8">
+        <div className="mb-5 flex flex-wrap items-center gap-2 md:gap-3">
           <span
             className="font-mono text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1.5"
             style={{ backgroundColor: "var(--ft-navy)", color: "#fff" }}
@@ -63,7 +63,7 @@ function ReportHeader({ match, detail }: { match: DisplayMatch; detail: Detailed
           <span className="ml-auto ft-label">{match.time} UTC · {match.date}</span>
         </div>
 
-        <div className="flex items-center justify-center gap-12">
+        <div className="flex items-center justify-center gap-6 md:gap-12">
           {([
             { team: match.homeTeam, label: "HOME", color: C_HOME },
             null,
@@ -74,7 +74,7 @@ function ReportHeader({ match, detail }: { match: DisplayMatch; detail: Detailed
                 <div key="score" className="flex shrink-0 flex-col items-center gap-2">
                   {match.score ? (
                     <span
-                      className="font-mono text-5xl font-black tracking-tight tabular-nums"
+                      className="font-mono text-3xl md:text-5xl font-black tracking-tight tabular-nums"
                       style={{ color: "var(--ft-navy)" }}
                     >
                       {match.score.home}
@@ -88,13 +88,13 @@ function ReportHeader({ match, detail }: { match: DisplayMatch; detail: Detailed
               );
             }
             return (
-              <div key={i} className="flex flex-1 flex-col items-center gap-4 text-center">
-                <div className="relative h-16 w-16">
+              <div key={i} className="flex flex-1 flex-col items-center gap-3 md:gap-4 text-center">
+                <div className="relative h-12 w-12 md:h-16 md:w-16">
                   {item.team.crest ? (
                     <Image src={item.team.crest} alt={item.team.name} fill className="object-contain" sizes="64px" />
                   ) : (
                     <div
-                      className="h-16 w-16 flex items-center justify-center font-mono text-base font-bold"
+                      className="h-12 w-12 md:h-16 md:w-16 flex items-center justify-center font-mono text-sm font-bold"
                       style={{ backgroundColor: "var(--ft-bg-panel)", color: item.color, border: `1px solid ${item.color}30` }}
                     >
                       {item.team.code}
@@ -150,7 +150,7 @@ function ExecutiveSummary({ match, detail }: { match: DisplayMatch; detail: Deta
             </div>
           </div>
 
-          <div className="flex gap-8 shrink-0">
+          <div className="flex flex-wrap gap-6 md:gap-8 shrink-0">
             {[
               { label: "模型置信度", value: `${pred.confidenceScore}`, unit: "/ 100" },
               { label: "期望回报率", value: detail ? `+${detail.evPercent}` : "—", unit: "%", accent: true },
@@ -432,7 +432,7 @@ function LockedMatchPage({ match, daysLeft }: { match: DisplayMatch; daysLeft: n
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
       <SiteNav activeSection="match" />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center gap-8 px-8 py-24 text-center">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center gap-8 px-4 md:px-8 py-16 md:py-24 text-center">
 
         {/* 锁定标识 */}
         <div
@@ -548,7 +548,7 @@ export default async function MatchAnalysisPage({
 
       {/* 面包屑 */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto flex h-10 max-w-5xl items-center gap-2 px-8">
+        <div className="mx-auto flex h-10 max-w-5xl items-center gap-2 px-4 md:px-8">
           <Link href="/" className="ft-label transition-colors hover:text-[color:var(--ft-navy)]">首页</Link>
           <span className="ft-label">/</span>
           <Link href="/worldcup" className="ft-label transition-colors hover:text-[color:var(--ft-navy)]">世界杯</Link>
@@ -557,7 +557,7 @@ export default async function MatchAnalysisPage({
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-8 py-8 space-y-4">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 md:px-8 py-6 md:py-8 space-y-4">
         {/* 1. 报告头部 */}
         <ReportHeader match={match} detail={detail} />
 

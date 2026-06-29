@@ -25,17 +25,17 @@ function DataStrip({ liveCount }: { liveCount: number }) {
   ];
   return (
     <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-panel)" }}>
-      <div className="mx-auto flex max-w-6xl divide-x px-8"
+      <div className="mx-auto flex max-w-6xl divide-x px-4 md:px-8"
         style={{ borderColor: "var(--ft-border)" }}>
         {items.map((s) => (
-          <div key={s.label} className="flex flex-1 flex-col items-center py-4 gap-0.5">
+          <div key={s.label} className="flex flex-1 flex-col items-center py-3 md:py-4 gap-0.5">
             <span
-              className="font-mono text-lg font-bold tabular-nums"
+              className="font-mono text-base md:text-lg font-bold tabular-nums"
               style={{ color: s.live ? "var(--ft-red)" : "var(--ft-navy)" }}
             >
               {s.value}
             </span>
-            <span className="ft-label">{s.label}</span>
+            <span className="ft-label text-[9px] md:text-[10px] text-center px-1">{s.label}</span>
           </div>
         ))}
       </div>
@@ -198,7 +198,7 @@ function SectionHeading({
   label: string; title: string; sub?: string; action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex items-end justify-between">
+    <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
       <div style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "16px" }}>
         <p className="ft-label mb-2">{label}</p>
         {/* Playfair Display 衬线大标题 */}
@@ -242,15 +242,14 @@ export default async function HomePage() {
 
       {/* Hero */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto max-w-6xl px-8 py-14">
-          <p className="ft-label mb-4">FirstTouch · Quantitative Sports Analytics</p>
-          {/* Playfair Display 大标题 */}
-          <h1 className="ft-heading text-4xl font-semibold leading-snug" style={{ maxWidth: "520px" }}>
+        <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-14">
+          <p className="ft-label mb-3 md:mb-4">FirstTouch · Quantitative Sports Analytics</p>
+          <h1 className="ft-heading text-2xl md:text-4xl font-semibold leading-snug" style={{ maxWidth: "520px" }}>
             Every decision begins<br />
             <span style={{ fontStyle: "italic" }}>with the first touch.</span>
           </h1>
           <p
-            className="mt-6 text-[14px] leading-relaxed"
+            className="mt-4 md:mt-6 text-[13px] md:text-[14px] leading-relaxed"
             style={{ color: "var(--ft-text-muted)", maxWidth: "480px" }}
           >
             足球场上的一次触球，在神经系统中预载了之后所有的决策——
@@ -259,7 +258,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-8 py-12 space-y-16">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 md:px-8 py-8 md:py-12 space-y-12 md:space-y-16">
 
         {/* ── 量化精选 ── */}
         <section>
