@@ -2,10 +2,11 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // 必须已登录
+  // auth() 在 Clerk v7 会自动读取 cookie 或 Authorization: Bearer token
   const { userId } = await auth();
+
   if (!userId) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "请先登录后再兑换邀请码" }, { status: 401 });
   }
 
   const body = await req.json();
@@ -15,7 +16,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "请输入邀请码" }, { status: 400 });
   }
 
-  // 从环境变量读取有效码
   const validCodes = (process.env.INVITE_CODES ?? "")
     .split(",")
     .map((c) => c.trim().toUpperCase())
@@ -25,14 +25,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "邀请码无效，请检查后重试" }, { status: 400 });
   }
 
-  // 检查用户是否已经是 premium
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
+
   if ((user.publicMetadata as { tier?: string }).tier === "premium") {
     return NextResponse.json({ message: "你已拥有 Analyst 权限" });
   }
 
-  // 写入 publicMetadata（服务端操作，用户无法伪造）
   await client.users.updateUserMetadata(userId, {
     publicMetadata: {
       tier: "premium",
