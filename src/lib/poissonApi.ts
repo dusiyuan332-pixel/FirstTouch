@@ -6,7 +6,7 @@
  */
 
 const MODEL_BASE_URL =
-  process.env.NEXT_PUBLIC_MODEL_API_URL ?? "http://localhost:8000";
+  process.env.MODEL_BASE_URL ?? process.env.NEXT_PUBLIC_MODEL_API_URL ?? "http://localhost:8000";
 
 // ─── 请求类型 ────────────────────────────────────────────────────────────────
 
