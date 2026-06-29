@@ -5,6 +5,7 @@ import SiteNav from "@/components/SiteNav";
 import { fetchMatchById, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
 import { PREDICTIONS, DETAILED_ANALYSIS, type DetailedAnalysis } from "@/data/wc2026";
 import { PoissonPanel } from "@/components/PoissonPanel";
+import OddsPanel from "@/components/OddsPanel";
 import { checkAnalystAccess } from "@/components/PaywallGate";
 
 // ─── 设计令牌（白底） ──────────────────────────────────────────────────────────
@@ -566,7 +567,21 @@ export default async function MatchAnalysisPage({
         {/* 3. 市场价值差 */}
         {match.prediction && detail && <EdgeAnalysis match={match} detail={detail} />}
 
-        {/* 4. Python 泊松实时模型 */}
+        {/* 4. 实时盘口 + Edge 分析 */}
+        <section>
+          <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
+            <p className="ft-label">Market Intelligence · 市场盘口</p>
+          </div>
+          <OddsPanel
+            homeTeam={match.homeTeam.name}
+            awayTeam={match.awayTeam.name}
+            modelHomeProb={(match.prediction?.homeWin ?? 40) / 100}
+            modelDrawProb={(match.prediction?.draw ?? 30) / 100}
+            modelAwayProb={(match.prediction?.awayWin ?? 30) / 100}
+          />
+        </section>
+
+        {/* 5. Python 泊松实时模型 */}
         <PoissonPanel match={match} />
 
         {/* 5. 球队情报 */}
