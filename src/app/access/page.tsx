@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 
@@ -52,25 +52,26 @@ function InviteCodeForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const router = useRouter();
-  const { getToken } = useAuth();
+  const { user } = useUser();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) return;
 
+    if (!user?.id) {
+      setStatus("error");
+      setMessage("请先登录后再兑换邀请码");
+      return;
+    }
+
     setStatus("loading");
     setMessage("");
-
-    const token = await getToken();
 
     try {
       const res = await fetch("/api/redeem-invite", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ code: code.trim() }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.trim(), userId: user.id }),
       });
       const data = await res.json();
 
