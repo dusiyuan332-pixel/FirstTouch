@@ -85,16 +85,18 @@ export async function fetchMatchOdds(
 ): Promise<MatchOdds | null> {
   if (!API_KEY) return null;
 
+  // 只请求 6 家主流庄家，减少数据量（credit 消耗不变，但响应更小）
+  const TOP_BOOKMAKERS = "bet365,pinnacle,williamhill,betfair,unibet,betsson";
   const url =
     `${BASE}/sports/soccer_fifa_world_cup/odds` +
-    `?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+    `?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal&bookmakers=${TOP_BOOKMAKERS}`;
 
   let events: OddsEvent[];
   let remainingCredits = 0;
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 300 }, // 5 分钟缓存
+      next: { revalidate: 1800 }, // 30 分钟缓存（盘口变化慢，节省 credits）
     });
     remainingCredits = Number(res.headers.get("x-requests-remaining") ?? 0);
     if (!res.ok) return null;

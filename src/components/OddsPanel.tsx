@@ -177,7 +177,7 @@ export default async function OddsPanel({
       <div className="px-5 py-2.5"
         style={{ backgroundColor: "var(--ft-bg-section)", borderTop: "1px solid var(--ft-divider)" }}>
         <p className="ft-label" style={{ color: "var(--ft-text-dim)" }}>
-          Data: The Odds API · EU region · 5 min cache · Not betting advice
+          Data: The Odds API · EU region · 30 min cache · Not betting advice
         </p>
       </div>
     </div>
