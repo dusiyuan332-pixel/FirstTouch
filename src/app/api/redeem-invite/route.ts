@@ -17,8 +17,11 @@ export async function POST(req: Request) {
       secretKey: process.env.CLERK_SECRET_KEY!,
     });
     userId = payload.sub;
-  } catch {
-    return NextResponse.json({ error: "登录状态已过期，请重新登录后重试" }, { status: 401 });
+  } catch (err) {
+    return NextResponse.json({
+      error: "登录状态已过期，请重新登录后重试",
+      _debug: String(err),
+    }, { status: 401 });
   }
 
   const body = await req.json();
