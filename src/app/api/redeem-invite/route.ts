@@ -1,13 +1,14 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  const user = await currentUser();
 
-  if (!userId) {
+  if (!user) {
     return NextResponse.json({ error: "请先登录后再兑换邀请码" }, { status: 401 });
   }
 
+  const userId = user.id;
   const body = await req.json();
   const inputCode = (body.code as string | undefined)?.trim().toUpperCase();
 
@@ -25,7 +26,6 @@ export async function POST(req: Request) {
   }
 
   const client = await clerkClient();
-  const user = await client.users.getUser(userId);
 
   if ((user.publicMetadata as { tier?: string }).tier === "premium") {
     return NextResponse.json({ message: "你已拥有 Analyst 权限" });
