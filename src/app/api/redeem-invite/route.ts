@@ -28,8 +28,8 @@ export async function POST(req: Request) {
   let user;
   try {
     user = await client.users.getUser(userId);
-  } catch {
-    return NextResponse.json({ error: "用户不存在，请重新登录后重试" }, { status: 401 });
+  } catch (err) {
+    return NextResponse.json({ error: "用户不存在，请重新登录后重试", _debug: String(err) }, { status: 401 });
   }
 
   if ((user.publicMetadata as { tier?: string }).tier === "premium") {
