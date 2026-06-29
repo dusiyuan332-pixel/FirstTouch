@@ -5,7 +5,8 @@ import ScheduleDateNav from "@/components/ScheduleDateNav";
 import { fetchWC2026Matches, groupByDate, getUniqueDates, formatDate } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 
-const TODAY = "2026-06-28";
+// 动态计算今日 UTC 日期，确保不因服务器时区偏差显示昨天
+const TODAY = new Date().toISOString().slice(0, 10);
 
 export default async function WorldCupPage() {
   let allMatches = await fetchWC2026Matches(PREDICTIONS).catch(() => null);
