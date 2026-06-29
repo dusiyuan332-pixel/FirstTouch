@@ -1,26 +1,8 @@
-import { clerkClient, verifyToken } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  let userId: string | null = null;
-
-  // Try Bearer token first (sent explicitly from client)
-  const authHeader = req.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7);
-    try {
-      const payload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY!,
-        authorizedParties: [
-          "http://localhost:3000",
-          "https://first-touch-theta.vercel.app",
-        ],
-      });
-      userId = payload.sub;
-    } catch {
-      // token invalid or expired
-    }
-  }
+  const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "请先登录后再兑换邀请码" }, { status: 401 });
