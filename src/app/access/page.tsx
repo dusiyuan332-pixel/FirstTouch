@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 
@@ -51,6 +52,7 @@ function InviteCodeForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const { getToken } = useAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,10 +61,15 @@ function InviteCodeForm() {
     setStatus("loading");
     setMessage("");
 
+    const token = await getToken();
+
     try {
       const res = await fetch("/api/redeem-invite", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ code: code.trim() }),
       });
       const data = await res.json();
