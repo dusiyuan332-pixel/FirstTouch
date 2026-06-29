@@ -216,7 +216,7 @@ export async function fetchMatchById(
   predictionMap: Record<string, MatchPrediction> = {}
 ): Promise<DisplayMatch | null> {
   try {
-    const match = await fdFetch<FDMatchResponse>(`/matches/${id}`, 120);
+    const match = await fdFetch<FDMatchResponse>(`/matches/${id}`, 60);
     const key = `${match.homeTeam.tla}-${match.awayTeam.tla}`;
     return fdMatchToDisplay(match, predictionMap[key]);
   } catch {

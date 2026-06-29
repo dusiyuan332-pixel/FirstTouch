@@ -7,6 +7,7 @@ import { PREDICTIONS, DETAILED_ANALYSIS, type DetailedAnalysis } from "@/data/wc
 import { PoissonPanel } from "@/components/PoissonPanel";
 import OddsPanel from "@/components/OddsPanel";
 import { checkAnalystAccess } from "@/components/PaywallGate";
+import LiveRefresher from "@/components/LiveRefresher";
 
 // ─── 设计令牌（白底） ──────────────────────────────────────────────────────────
 
@@ -42,11 +43,9 @@ function ReportHeader({ match, detail }: { match: DisplayMatch; detail: Detailed
           <span style={{ color: "var(--ft-text-dim)" }}>·</span>
           <span className="ft-label">{detail?.modelVersion ?? "v0.1-MVP"}</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <span className="ft-label">Generated {now}</span>
-          {isLive && (
-            <span className="ft-label animate-pulse" style={{ color: C_AWAY }}>LIVE</span>
-          )}
+          <LiveRefresher isLive={isLive} />
         </div>
       </div>
 
