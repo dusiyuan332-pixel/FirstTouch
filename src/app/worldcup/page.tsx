@@ -4,6 +4,7 @@ import ScheduleMatchCard from "@/components/ScheduleMatchCard";
 import ScheduleDateNav from "@/components/ScheduleDateNav";
 import { fetchWC2026Matches, groupByDate, getUniqueDates, formatDate } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
+import { computeQuickPrediction } from "@/lib/quickPredict";
 
 // 动态计算今日 UTC 日期，确保不因服务器时区偏差显示昨天
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -17,7 +18,23 @@ export default async function WorldCupPage() {
   cutoff.setDate(cutoff.getDate() - 2);
   const cutoffStr = cutoff.toISOString().slice(0, 10);
 
-  const visibleMatches = allMatches.filter((m) => m.date >= cutoffStr);
+  const visibleMatches = allMatches
+    .filter((m) => m.date >= cutoffStr)
+    .map((m) => {
+      // 若无静态预测，且比赛已开放分析（已结束 / 3天内），用轻量模型补全
+      if (!m.prediction) {
+        const days = Math.ceil(
+          (new Date(`${m.date}T${m.time}:00Z`).getTime() - Date.now()) / 86400000
+        );
+        const open = m.status === "finished" || m.status === "live" || days <= 3;
+        if (open) {
+          const quick = computeQuickPrediction(m.homeTeam.code, m.awayTeam.code);
+          if (quick) return { ...m, prediction: quick };
+        }
+      }
+      return m;
+    });
+
   const dates = getUniqueDates(visibleMatches);
   const byDate = groupByDate(visibleMatches);
 
