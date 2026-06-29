@@ -58,12 +58,6 @@ function InviteCodeForm() {
     e.preventDefault();
     if (!code.trim()) return;
 
-    if (!isSignedIn) {
-      setStatus("error");
-      setMessage("请先登录后再兑换邀请码");
-      return;
-    }
-
     setStatus("loading");
     setMessage("");
 

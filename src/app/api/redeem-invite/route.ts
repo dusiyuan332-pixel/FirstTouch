@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   // auth() 在 Clerk v7 会自动读取 cookie 或 Authorization: Bearer token
-  const { userId } = await auth();
+  const { userId } = await auth({
+    authorizedParties: [
+      "http://localhost:3000",
+      "https://first-touch-theta.vercel.app",
+    ],
+  });
 
   if (!userId) {
     return NextResponse.json({ error: "请先登录后再兑换邀请码" }, { status: 401 });
