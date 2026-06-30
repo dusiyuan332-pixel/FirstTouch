@@ -2,8 +2,9 @@
  * H2H (Head-to-Head) 历史战绩
  * ─────────────────────────────────────────────────────────────────────────────
  * 数据源：API-Football v3 (api-sports.io)
- * 免费配额：100 requests/day  ← 每场比赛页最多消耗 3 次：2 次队伍查询 + 1 次 H2H
- * 缓存策略：队伍 ID 查询 24h，H2H 结果 24h
+ * 免费配额：100 requests/day
+ * 缓存策略：cache: "no-store" 避免 Next.js 缓存污染，
+ *           依赖 Vercel Edge 和浏览器层缓存；每场比赛消耗 3 次配额。
  */
 
 const BASE = "https://v3.football.api-sports.io";
@@ -80,13 +81,14 @@ export interface H2HData {
 
 // ─── 工具函数 ──────────────────────────────────────────────────────────────────
 
-async function apiFetch<T>(path: string, revalidate = 3600): Promise<T> {
+async function apiFetch<T>(path: string): Promise<T> {
   const key = process.env.API_FOOTBALL_KEY;
   if (!key) throw new Error("API_FOOTBALL_KEY 未设置");
 
   const res = await fetch(`${BASE}${path}`, {
     headers: { "x-apisports-key": key },
-    next: { revalidate },
+    // 不使用 Next.js fetch 缓存，防止首次失败的结果被缓存 24h
+    cache: "no-store",
   });
 
   if (!res.ok) throw new Error(`API-Football 请求失败: HTTP ${res.status}`);
@@ -100,10 +102,10 @@ async function apiFetch<T>(path: string, revalidate = 3600): Promise<T> {
 async function searchTeamId(teamName: string): Promise<number | null> {
   try {
     const data = await apiFetch<ApiFTeamsResponse>(
-      `/teams?search=${encodeURIComponent(teamName)}`,
-      86400
+      `/teams?search=${encodeURIComponent(teamName)}`
     );
     if (!data.response?.length) return null;
+    // 优先匹配国家队（national: true），其次取第一条结果
     const national = data.response.find((r) => r.team.national);
     return (national ?? data.response[0]).team.id;
   } catch {
@@ -131,12 +133,11 @@ export async function fetchH2H(
   ]);
   if (!id1 || !id2) return null;
 
-  // 获取最近 10 场历史交锋，缓存 24h
+  // 获取最近 10 场历史交锋
   let fixtures: ApiFFixture[];
   try {
     const data = await apiFetch<ApiFH2HResponse>(
-      `/fixtures/headtohead?h2h=${id1}-${id2}&last=10`,
-      86400
+      `/fixtures/headtohead?h2h=${id1}-${id2}&last=10`
     );
     fixtures = data.response ?? [];
   } catch {

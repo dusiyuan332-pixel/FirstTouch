@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import SiteNav from "@/components/SiteNav";
 import { fetchMatchById, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
@@ -10,6 +11,57 @@ import H2HPanel from "@/components/H2HPanel";
 import { fetchH2H } from "@/lib/h2hApi";
 import { checkAnalystAccess } from "@/components/PaywallGate";
 import LiveRefresher from "@/components/LiveRefresher";
+
+// ─── H2H 异步子组件（独立加载，不阻塞主页面）────────────────────────────────────
+
+async function H2HSection({
+  homeName,
+  awayName,
+}: {
+  homeName: string;
+  awayName: string;
+}) {
+  const PANEL  = { border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" } as const;
+  const h2hData = await fetchH2H(homeName, awayName).catch(() => null);
+
+  return (
+    <>
+      {h2hData ? (
+        <H2HPanel
+          h2h={h2hData}
+          currentHomeName={homeName}
+          currentAwayName={awayName}
+        />
+      ) : (
+        <div
+          className="flex flex-col items-center justify-center gap-2 py-8 text-center"
+          style={PANEL}
+        >
+          <p className="text-[13px] font-medium" style={{ color: "var(--ft-text-muted)" }}>
+            H2H 数据暂不可用
+          </p>
+          <p className="ft-label text-[11px] max-w-xs" style={{ color: "var(--ft-text-dim)" }}>
+            数据源：API-Football（100次/天免费额度）· 可能原因：今日配额已用尽，或两队历史对阵记录为空
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+
+// H2H 加载骨架
+function H2HSkeleton() {
+  return (
+    <div
+      className="animate-pulse py-10 text-center"
+      style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
+    >
+      <p className="ft-label text-[12px]" style={{ color: "var(--ft-text-dim)" }}>
+        正在获取历史交锋数据…
+      </p>
+    </div>
+  );
+}
 
 // ─── 设计令牌（白底） ──────────────────────────────────────────────────────────
 
@@ -543,8 +595,6 @@ export default async function MatchAnalysisPage({
   const key = `${match.homeTeam.code}-${match.awayTeam.code}`;
   const detail: DetailedAnalysis | null = DETAILED_ANALYSIS[key] ?? null;
 
-  // H2H 数据（API-Football，缓存 24h，失败时静默降级）
-  const h2hData = await fetchH2H(match.homeTeam.name, match.awayTeam.name).catch(() => null);
 
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
@@ -588,30 +638,17 @@ export default async function MatchAnalysisPage({
         {/* 5. Python 泊松实时模型 */}
         <PoissonPanel match={match} />
 
-        {/* 6. H2H 历史交锋 */}
+        {/* 6. H2H 历史交锋（Suspense 独立加载，不阻塞主页面） */}
         <section>
           <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
             <p className="ft-label">Historical Context · 历史交锋</p>
           </div>
-          {h2hData ? (
-            <H2HPanel
-              h2h={h2hData}
-              currentHomeName={match.homeTeam.name}
-              currentAwayName={match.awayTeam.name}
+          <Suspense fallback={<H2HSkeleton />}>
+            <H2HSection
+              homeName={match.homeTeam.name}
+              awayName={match.awayTeam.name}
             />
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center gap-2 py-8 text-center"
-              style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
-            >
-              <p className="text-[13px] font-medium" style={{ color: "var(--ft-text-muted)" }}>
-                H2H 数据加载中或暂不可用
-              </p>
-              <p className="ft-label text-[11px] max-w-xs" style={{ color: "var(--ft-text-dim)" }}>
-                数据源：API-Football（100次/天）· 可能原因：配额已用尽、API Key 未配置或两队无历史交锋记录
-              </p>
-            </div>
-          )}
+          </Suspense>
         </section>
 
         {/* 7. 球队情报 */}
