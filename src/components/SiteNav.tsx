@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useUser, UserButton, SignInButton } from "@clerk/nextjs";
-import LogoMark from "@/components/LogoMark";
 
 interface SiteNavProps {
   activeSection?: "dashboard" | "worldcup" | "match";
@@ -32,7 +32,14 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
           className="flex items-center gap-2 md:gap-3 no-underline"
           style={{ color: "var(--ft-navy)" }}
         >
-          <LogoMark size={28} color="var(--ft-navy)" />
+          <Image
+            src="/logo-mark.png"
+            alt="FirstTouch"
+            width={28}
+            height={32}
+            className="object-contain"
+            priority
+          />
           <div className="flex flex-col justify-center leading-none">
             <span className="ft-heading text-[15px] md:text-[17px] font-semibold" style={{ letterSpacing: "0.02em" }}>
               FirstTouch

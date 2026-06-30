@@ -321,27 +321,22 @@ export default async function HomePage() {
           }}
         />
 
-        {/* 右侧大号 Logo 装饰（半透明水印效果） */}
-        <div
-          className="absolute right-[-40px] top-1/2 -translate-y-1/2 pointer-events-none hidden md:block"
-          style={{ opacity: 0.06 }}
-        >
-          <svg viewBox="0 0 200 230" width="480" height="552" fill="white">
-            <polygon points="10,63 57,14 83,54 63,77" />
-            <polygon points="190,63 143,14 117,54 137,77" />
-            <polygon points="88,27 100,10 112,27 108,57 92,57" />
-            <polygon points="92,57 108,57 108,77 92,77" />
-            <polygon points="63,77 92,77 92,103 63,103" />
-            <polygon points="108,77 137,77 137,103 108,103" />
-            <polygon points="10,112 62,93 64,116 12,126" />
-            <polygon points="190,112 138,93 136,116 188,126" />
-            <polygon points="63,127 92,127 92,153 63,153" />
-            <polygon points="108,127 137,127 137,153 108,153" />
-            <polygon points="33,166 63,153 73,179 37,183" />
-            <polygon points="167,166 137,153 127,179 163,183" />
-            <polygon points="73,179 127,179 119,206 100,224 81,206" />
-          </svg>
-        </div>
+        {/* 右侧大号 Logo 装饰（半透明水印，使用真实 PNG） */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-mark.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute pointer-events-none hidden md:block"
+          style={{
+            opacity: 0.07,
+            width: "480px",
+            right: "-60px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            filter: "brightness(10)",
+          }}
+        />
 
         {/* 文字卡片：底部左侧悬浮（Rothschild 标志性布局） */}
         <div
