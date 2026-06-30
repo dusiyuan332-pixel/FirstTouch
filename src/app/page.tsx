@@ -3,6 +3,8 @@ import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
 import LeagueTabs from "@/components/LeagueTabs";
 import KickoffCountdown from "@/components/KickoffCountdown";
+import LiveMatchClock from "@/components/LiveMatchClock";
+import LiveRefresher from "@/components/LiveRefresher";
 import { fetchWC2026Matches, fetchTopFiveLeagues, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 
@@ -97,7 +99,15 @@ function QuantCard({ match }: { match: DisplayMatch }) {
             if (!item) {
               return (
                 <div key="mid" className="flex shrink-0 flex-col items-center gap-1">
-                  {match.score ? (
+                  {/* 直播中：实时比分 + 走秒时钟 */}
+                  {match.status === "live" && match.score ? (
+                    <LiveMatchClock
+                      score={match.score}
+                      apiMinute={match.minute}
+                      statusDetail={match.statusDetail}
+                    />
+                  ) : match.status === "finished" && match.score ? (
+                    /* 已结束：静态比分 */
                     <span
                       className="font-mono text-2xl font-black tabular-nums"
                       style={{ color: "var(--ft-navy)" }}
@@ -107,6 +117,7 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                       {match.score.away}
                     </span>
                   ) : (
+                    /* 未开赛：倒计时 or 静态时间 */
                     <KickoffCountdown
                       dateStr={match.date}
                       timeStr={match.time}
@@ -247,6 +258,8 @@ export default async function HomePage() {
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
       <SiteNav activeSection="dashboard" />
       <DataStrip liveCount={liveCount} />
+      {/* 有直播比赛时，每 60s 静默刷新主页数据（无 UI，后台运行） */}
+      <LiveRefresher isLive={liveCount > 0} silent />
 
       {/* Hero */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>

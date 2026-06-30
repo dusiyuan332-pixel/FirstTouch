@@ -12,11 +12,14 @@ import { useRouter } from "next/navigation";
 interface LiveRefresherProps {
   isLive: boolean;
   intervalMs?: number;
+  /** 不渲染任何 UI，仅在后台刷新 */
+  silent?: boolean;
 }
 
 export default function LiveRefresher({
   isLive,
   intervalMs = 60_000,
+  silent = false,
 }: LiveRefresherProps) {
   const router = useRouter();
   const [countdown, setCountdown] = useState(intervalMs / 1000);
@@ -38,7 +41,7 @@ export default function LiveRefresher({
     return () => clearInterval(tick);
   }, [isLive, intervalMs, router]);
 
-  if (!isLive) return null;
+  if (!isLive || silent) return null;
 
   return (
     <div

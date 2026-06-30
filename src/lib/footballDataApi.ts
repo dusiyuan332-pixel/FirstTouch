@@ -22,6 +22,7 @@ interface FDMatch {
   id: number;
   utcDate: string;         // "2026-06-28T19:00:00Z"
   status: string;          // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | ...
+  minute?: number | null;  // current match minute (only present when IN_PLAY / PAUSED)
   matchday: number | null;
   stage: string;           // GROUP_STAGE | LAST_32 | LAST_16 | QUARTER_FINALS | SEMI_FINALS | FINAL
   group: string | null;    // "GROUP_A" | null
@@ -69,6 +70,8 @@ export interface MatchPrediction {
   insight: string;
 }
 
+export type LiveStatusDetail = "IN_PLAY" | "PAUSED";
+
 export interface DisplayMatch {
   id: string;              // football-data.org match ID (字符串化)
   stage: MatchStage;
@@ -78,6 +81,10 @@ export interface DisplayMatch {
   date: string;            // "2026-06-28"
   time: string;            // "19:00"
   status: MatchStatus;
+  /** 比赛当前分钟数（仅 live 时有值） */
+  minute?: number;
+  /** IN_PLAY = 上下半场进行中，PAUSED = 中场休息 */
+  statusDetail?: LiveStatusDetail;
   score?: { home: number; away: number };
   prediction?: MatchPrediction;
 }
@@ -153,6 +160,10 @@ function fdMatchToDisplay(match: FDMatch, prediction?: MatchPrediction): Display
       ? { home: match.score.fullTime.home, away: match.score.fullTime.away }
       : undefined;
 
+  const statusDetail: LiveStatusDetail | undefined =
+    match.status === "IN_PLAY" ? "IN_PLAY" :
+    match.status === "PAUSED"  ? "PAUSED"  : undefined;
+
   return {
     id: String(match.id),
     stage: mapStage(match.stage),
@@ -162,6 +173,8 @@ function fdMatchToDisplay(match: FDMatch, prediction?: MatchPrediction): Display
     date,
     time,
     status: mapStatus(match.status),
+    minute: match.minute ?? undefined,
+    statusDetail,
     score,
     prediction,
   };
@@ -197,7 +210,7 @@ export async function fetchWC2026Matches(
 ): Promise<DisplayMatch[]> {
   const data = await fdFetch<FDMatchesResponse>(
     "/competitions/WC/matches?season=2026",
-    300
+    60   // 60s：兼顾直播比分刷新与 API 配额
   );
 
   return data.matches
