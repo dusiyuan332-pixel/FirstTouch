@@ -589,18 +589,30 @@ export default async function MatchAnalysisPage({
         <PoissonPanel match={match} />
 
         {/* 6. H2H 历史交锋 */}
-        {h2hData && (
-          <section>
-            <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
-              <p className="ft-label">Historical Context · 历史交锋</p>
-            </div>
+        <section>
+          <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
+            <p className="ft-label">Historical Context · 历史交锋</p>
+          </div>
+          {h2hData ? (
             <H2HPanel
               h2h={h2hData}
               currentHomeName={match.homeTeam.name}
               currentAwayName={match.awayTeam.name}
             />
-          </section>
-        )}
+          ) : (
+            <div
+              className="flex flex-col items-center justify-center gap-2 py-8 text-center"
+              style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
+            >
+              <p className="text-[13px] font-medium" style={{ color: "var(--ft-text-muted)" }}>
+                H2H 数据加载中或暂不可用
+              </p>
+              <p className="ft-label text-[11px] max-w-xs" style={{ color: "var(--ft-text-dim)" }}>
+                数据源：API-Football（100次/天）· 可能原因：配额已用尽、API Key 未配置或两队无历史交锋记录
+              </p>
+            </div>
+          )}
+        </section>
 
         {/* 7. 球队情报 */}
         {detail && <TeamIntelligence match={match} detail={detail} />}
