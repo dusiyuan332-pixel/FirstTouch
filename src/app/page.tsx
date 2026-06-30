@@ -299,15 +299,15 @@ export default async function HomePage() {
           <h1 className="ft-heading font-semibold leading-tight" style={{ maxWidth: "600px" }}>
             <span className="block text-2xl md:text-[2.6rem]">Quantifying the Genesis of Decision.</span>
             <span className="block text-xl md:text-3xl mt-1" style={{ fontStyle: "italic", color: "var(--ft-navy)" }}>
-              量化决断之始。
+              量化決斷之始。
             </span>
           </h1>
           <p
             className="mt-5 md:mt-7 text-[13px] md:text-[14px] leading-relaxed font-sans"
             style={{ color: "var(--ft-text-muted)", maxWidth: "520px" }}
           >
-            足球场上的第一次触球，即是战术执行的输入层（Input Layer）。FirstTouch 通过底层神经网络，
-            在球权转换的毫秒间预演决策拓扑，为您锚定每一场对局的隐含期望收益（EV）。
+            足球場上的第一次觸球，即是戰術執行的輸入層（Input Layer）。FirstTouch 透過底層神經網絡，
+            在球權轉換的毫秒間預演決策拓撲，為您錨定每一場對局的隱含期望收益（EV）。
           </p>
         </div>
       </div>
