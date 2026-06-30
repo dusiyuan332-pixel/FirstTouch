@@ -35,7 +35,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
           <img
             src="/newfulllogo.svg"
             alt="FirstTouch"
-            style={{ height: "30px", width: "auto", maxWidth: "180px" }}
+            style={{ height: "44px", width: "auto", maxWidth: "260px" }}
             className="object-contain"
           />
         </Link>

@@ -320,10 +320,10 @@ export default async function HomePage() {
           }}
         />
 
-        {/* 文字卡片：底部左侧悬浮（Rothschild 标志性布局） */}
+        {/* 文字卡片：底部偏左悬浮（Rothschild 标志性布局） */}
         <div
-          className="absolute bottom-0 left-0 bg-white px-8 md:px-12 py-8 md:py-10"
-          style={{ maxWidth: "min(520px, 90vw)" }}
+          className="absolute bottom-0 left-0 md:left-[8%] bg-white px-8 md:px-12 py-8 md:py-10"
+          style={{ maxWidth: "min(520px, 88vw)" }}
         >
           <p
             className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase mb-3 md:mb-4"
