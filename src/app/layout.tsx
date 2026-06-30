@@ -23,6 +23,11 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "FirstTouch · Quantitative Football Analytics",
   description: "Institutional-grade match analysis and quantitative investment signals.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
