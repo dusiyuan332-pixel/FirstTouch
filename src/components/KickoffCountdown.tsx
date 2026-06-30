@@ -27,14 +27,17 @@ function fmt(secs: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-const THRESHOLD = 60 * 60; // 60 分钟
+const THRESHOLD   = 60 * 60;  // 开赛前 60 分钟开始显示
+const MAX_ELAPSED = 120 * 60; // 最多显示到开赛后 120 分钟（含加时）
 
 export default function KickoffCountdown({ dateStr, timeStr, variant = "card", fallback }: Props) {
   const [secs, setSecs] = useState(() => secondsLeft(dateStr, timeStr));
 
   useEffect(() => {
-    // 超过阈值时不启动计时器，节省资源
-    if (secondsLeft(dateStr, timeStr) > THRESHOLD) return;
+    const s = secondsLeft(dateStr, timeStr);
+    // 超过倒计时窗口且比赛已过 2 小时 → 不启动
+    if (s > THRESHOLD) return;
+    if (s < -MAX_ELAPSED) return;
 
     const id = setInterval(() => {
       setSecs(secondsLeft(dateStr, timeStr));
@@ -43,29 +46,57 @@ export default function KickoffCountdown({ dateStr, timeStr, variant = "card", f
     return () => clearInterval(id);
   }, [dateStr, timeStr]);
 
-  // 超过 60 分钟 或 比赛已开始超过 2 分钟 → 渲染 fallback 或空
-  if (secs > THRESHOLD || secs < -120) return fallback ? <>{fallback}</> : null;
+  // 超过 60 分钟未开赛，或超过 2 小时仍未结束（按理已结束）→ fallback
+  if (secs > THRESHOLD || secs < -MAX_ELAPSED) {
+    return fallback ? <>{fallback}</> : null;
+  }
 
-  // 刚好开球
+  // ── 已过开球时间（API 尚未回报 live 状态）─────────────────────────────────
   if (secs <= 0) {
-    return variant === "badge" ? (
-      <span
-        className="animate-pulse font-mono text-[9px] font-bold uppercase px-1.5 py-0.5"
-        style={{ backgroundColor: "rgba(176,28,28,0.1)", color: "var(--ft-red)" }}
-      >
-        KICKOFF
-      </span>
-    ) : (
-      <span
-        className="animate-pulse font-mono text-sm font-black"
-        style={{ color: "var(--ft-red)" }}
-      >
-        KICKOFF
-      </span>
+    const elapsedMin = Math.floor(-secs / 60);
+    const elapsedSec = (-secs) % 60;
+
+    if (variant === "badge") {
+      return (
+        <span
+          className="inline-flex items-center gap-1 font-mono text-[9px] font-bold px-1.5 py-0.5"
+          style={{
+            backgroundColor: "rgba(176,28,28,0.08)",
+            color: "var(--ft-red)",
+            border: "1px solid rgba(176,28,28,0.2)",
+          }}
+        >
+          <PulsingDot />
+          {elapsedMin > 0 ? `${elapsedMin}'` : "KO"}
+        </span>
+      );
+    }
+
+    // card 模式：开球瞬间 (elapsedMin === 0) 显示 KICKOFF，之后显示估算时钟
+    if (elapsedMin === 0) {
+      return (
+        <span className="animate-pulse font-mono text-sm font-black" style={{ color: "var(--ft-red)" }}>
+          KICKOFF
+        </span>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="flex items-center gap-1.5">
+          <PulsingDot />
+          <span className="font-mono text-xl font-black tabular-nums" style={{ color: "var(--ft-red)" }}>
+            {elapsedMin}&apos;{String(elapsedSec).padStart(2, "0")}
+          </span>
+        </div>
+        <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>
+          LIVE · API 同步中
+        </span>
+      </div>
     );
   }
 
-  // 倒计时中 —— 区分两种展示模式
+  // ── 倒计时（secs > 0）─────────────────────────────────────────────────────
   if (variant === "badge") {
     return (
       <span
@@ -76,35 +107,34 @@ export default function KickoffCountdown({ dateStr, timeStr, variant = "card", f
           border: "1px solid rgba(176,28,28,0.2)",
         }}
       >
-        {/* 跳动点 */}
-        <span className="relative flex h-1.5 w-1.5 shrink-0">
-          <span
-            className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50"
-            style={{ backgroundColor: "var(--ft-red)" }}
-          />
-          <span
-            className="relative inline-flex h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: "var(--ft-red)" }}
-          />
-        </span>
+        <PulsingDot />
         {fmt(secs)}
       </span>
     );
   }
 
-  // variant === "card"：显示在对阵卡片中央
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="ft-label" style={{ color: "var(--ft-red)" }}>
-        KICKOFF IN
-      </span>
-      <span
-        className="font-mono text-xl font-black tabular-nums leading-none"
-        style={{ color: "var(--ft-red)" }}
-      >
+      <span className="ft-label" style={{ color: "var(--ft-red)" }}>KICKOFF IN</span>
+      <span className="font-mono text-xl font-black tabular-nums leading-none" style={{ color: "var(--ft-red)" }}>
         {fmt(secs)}
       </span>
       <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>UTC</span>
     </div>
+  );
+}
+
+function PulsingDot() {
+  return (
+    <span className="relative flex h-1.5 w-1.5 shrink-0">
+      <span
+        className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50"
+        style={{ backgroundColor: "var(--ft-red)" }}
+      />
+      <span
+        className="relative inline-flex h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: "var(--ft-red)" }}
+      />
+    </span>
   );
 }

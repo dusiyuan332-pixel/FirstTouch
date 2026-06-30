@@ -24,7 +24,7 @@ function DataStrip({ liveCount }: { liveCount: number }) {
     { label: "本届总场次",   value: "104" },
     { label: "直播进行中",   value: liveCount > 0 ? `${liveCount}` : "—", live: liveCount > 0 },
     { label: "已建模对局",   value: String(Object.keys(PREDICTIONS).length) },
-    { label: "数据刷新",     value: "5 min" },
+    { label: "数据刷新",     value: "1 min" },
   ];
   return (
     <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-panel)" }}>
