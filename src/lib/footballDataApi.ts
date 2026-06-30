@@ -26,6 +26,7 @@ interface FDMatch {
   matchday: number | null;
   stage: string;           // GROUP_STAGE | LAST_32 | LAST_16 | QUARTER_FINALS | SEMI_FINALS | FINAL
   group: string | null;    // "GROUP_A" | null
+  venue?: string | null;   // Stadium name, e.g. "SoFi Stadium"
   homeTeam: FDTeam;
   awayTeam: FDTeam;
   score: FDScore;
@@ -87,6 +88,8 @@ export interface DisplayMatch {
   statusDetail?: LiveStatusDetail;
   score?: { home: number; away: number };
   prediction?: MatchPrediction;
+  /** 场馆名称，来自 football-data.org API，可能为空 */
+  venue?: string;
 }
 
 // ── 中文球队名称映射（TLA → 中文）────────────────────────────────────────────
@@ -177,6 +180,7 @@ function fdMatchToDisplay(match: FDMatch, prediction?: MatchPrediction): Display
     statusDetail,
     score,
     prediction,
+    venue: match.venue ?? undefined,
   };
 }
 

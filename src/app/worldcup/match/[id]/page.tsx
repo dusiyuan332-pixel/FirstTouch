@@ -10,6 +10,7 @@ import OddsPanel from "@/components/OddsPanel";
 import H2HPanel from "@/components/H2HPanel";
 import TotalsPanel from "@/components/TotalsPanel";
 import TeamFormPanel from "@/components/TeamFormPanel";
+import VenueWeatherPanel from "@/components/VenueWeatherPanel";
 import { fetchH2H } from "@/lib/h2hApi";
 import { fetchDualTeamIntel } from "@/lib/formApi";
 import { checkAnalystAccess } from "@/components/PaywallGate";
@@ -668,6 +669,20 @@ export default async function MatchAnalysisPage({
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 md:px-8 py-6 md:py-8 space-y-4">
         {/* 1. 报告头部 */}
         <ReportHeader match={match} detail={detail} />
+
+        {/* 1b. 场馆 + 天气（异步，自带天气获取） */}
+        <Suspense fallback={
+          <div className="py-5 text-center animate-pulse ft-label"
+            style={{ border: "1px solid var(--ft-border)", color: "var(--ft-text-dim)" }}>
+            正在加载场馆与天气…
+          </div>
+        }>
+          <VenueWeatherPanel
+            venueName={match.venue}
+            matchDate={match.date}
+            fallbackCity="Los Angeles"
+          />
+        </Suspense>
 
         {/* 2. 执行摘要 */}
         {match.prediction && <ExecutiveSummary match={match} detail={detail} />}
