@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { DisplayMatch } from "@/lib/footballDataApi";
+import KickoffCountdown from "@/components/KickoffCountdown";
 
 // ─── 辅助函数 ─────────────────────────────────────────────────────────────────
 
@@ -92,6 +93,13 @@ export default function ScheduleMatchCard({ match }: { match: DisplayMatch }) {
           {match.status === "finished" && (
             <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>FT</span>
           )}
+          {match.status === "upcoming" && (
+            <KickoffCountdown
+              dateStr={match.date}
+              timeStr={match.time}
+              variant="badge"
+            />
+          )}
           {open && ratingC && ratingL && (
             <span
               className="font-mono text-[9px] font-semibold uppercase px-1.5 py-0.5"
@@ -113,7 +121,7 @@ export default function ScheduleMatchCard({ match }: { match: DisplayMatch }) {
           </span>
         </div>
 
-        {/* 比分 / 时间 */}
+        {/* 比分 / 时间 / 倒计时 */}
         <div className="shrink-0 text-center w-16">
           {match.score ? (
             <span className="font-mono text-base font-black tabular-nums" style={{ color: "var(--ft-navy)" }}>
@@ -122,9 +130,16 @@ export default function ScheduleMatchCard({ match }: { match: DisplayMatch }) {
               {match.score.away}
             </span>
           ) : (
-            <span className="font-mono text-sm" style={{ color: "var(--ft-text-muted)" }}>
-              {match.time}<span className="block ft-label">UTC</span>
-            </span>
+            <KickoffCountdown
+              dateStr={match.date}
+              timeStr={match.time}
+              variant="card"
+              fallback={
+                <span className="font-mono text-sm" style={{ color: "var(--ft-text-muted)" }}>
+                  {match.time}<span className="block ft-label">UTC</span>
+                </span>
+              }
+            />
           )}
         </div>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
 import LeagueTabs from "@/components/LeagueTabs";
+import KickoffCountdown from "@/components/KickoffCountdown";
 import { fetchWC2026Matches, fetchTopFiveLeagues, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 
@@ -106,13 +107,20 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                       {match.score.away}
                     </span>
                   ) : (
-                    <span
-                      className="font-mono text-base font-semibold"
-                      style={{ color: "var(--ft-text-muted)" }}
-                    >
-                      {match.time}
-                      <span className="block text-center ft-label mt-0.5">UTC</span>
-                    </span>
+                    <KickoffCountdown
+                      dateStr={match.date}
+                      timeStr={match.time}
+                      variant="card"
+                      fallback={
+                        <span
+                          className="font-mono text-base font-semibold"
+                          style={{ color: "var(--ft-text-muted)" }}
+                        >
+                          {match.time}
+                          <span className="block text-center ft-label mt-0.5">UTC</span>
+                        </span>
+                      }
+                    />
                   )}
                 </div>
               );
