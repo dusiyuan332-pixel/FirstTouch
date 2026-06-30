@@ -302,39 +302,21 @@ export default async function HomePage() {
         className="relative w-full overflow-hidden"
         style={{ height: "62vh", minHeight: "440px", maxHeight: "760px" }}
       >
-        {/* 深色渐变背景 */}
+        {/* 真实背景图 */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/herobg.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* 深色渐变遮罩（保证文字卡片外侧的层次感） */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(145deg, #040c18 0%, #08152a 35%, #0c1e3c 65%, #122448 100%)",
-          }}
-        />
-
-        {/* 微妙点阵纹理（增加质感） */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)",
-            backgroundSize: "30px 30px",
-          }}
-        />
-
-        {/* 右侧大号 Logo 装饰（半透明水印，使用真实 PNG） */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo-mark.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute pointer-events-none hidden md:block"
-          style={{
-            opacity: 0.07,
-            width: "480px",
-            right: "-60px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            filter: "brightness(10)",
+              "linear-gradient(to right, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.22) 100%)",
           }}
         />
 

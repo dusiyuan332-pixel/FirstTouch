@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useUser, UserButton, SignInButton } from "@clerk/nextjs";
 
 interface SiteNavProps {
@@ -29,23 +28,16 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
         {/* 品牌 */}
         <Link
           href="/"
-          className="flex items-center gap-2 md:gap-3 no-underline"
+          className="flex items-center no-underline"
           style={{ color: "var(--ft-navy)" }}
         >
-          <Image
-            src="/logo-mark.png"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/newfulllogo.svg"
             alt="FirstTouch"
-            width={28}
-            height={32}
+            style={{ height: "30px", width: "auto", maxWidth: "180px" }}
             className="object-contain"
-            priority
           />
-          <div className="flex flex-col justify-center leading-none">
-            <span className="ft-heading text-[15px] md:text-[17px] font-semibold" style={{ letterSpacing: "0.02em" }}>
-              FirstTouch
-            </span>
-            <span className="ft-label mt-0.5 hidden sm:block">Quantitative Analytics</span>
-          </div>
         </Link>
 
         {/* 导航 + 用户区 */}
