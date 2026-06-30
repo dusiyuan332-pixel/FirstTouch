@@ -23,7 +23,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
       }}
       className="sticky top-0 z-50"
     >
-      <div className="mx-auto flex h-20 md:h-24 max-w-6xl items-center justify-between px-4 md:px-8">
+      <div className="mx-auto flex h-14 md:h-16 max-w-6xl items-stretch justify-between px-4 md:px-8">
 
         {/* 品牌 */}
         <Link
@@ -33,9 +33,9 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/newfulllogo.svg"
+            src="/newfulllogo-trimmed.svg"
             alt="FirstTouch"
-            style={{ height: "80px", width: "auto", maxWidth: "460px" }}
+            style={{ height: "46px", width: "auto", maxWidth: "360px" }}
             className="object-contain"
           />
         </Link>
