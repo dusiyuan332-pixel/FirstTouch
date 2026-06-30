@@ -28,16 +28,28 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
         {/* 品牌 */}
         <Link
           href="/"
-          className="flex items-center no-underline"
+          className="flex items-center gap-3 no-underline"
           style={{ color: "var(--ft-navy)" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/newfulllogo-trimmed.svg"
-            alt="FirstTouch"
-            style={{ height: "46px", width: "auto", maxWidth: "360px" }}
+            src="/logo-nav.png"
+            alt=""
+            aria-hidden="true"
+            style={{ height: "38px", width: "auto" }}
             className="object-contain"
           />
+          <div className="flex flex-col justify-center leading-none">
+            <span
+              className="ft-heading text-[17px] md:text-[19px] font-semibold"
+              style={{ letterSpacing: "0.02em", color: "var(--ft-navy)" }}
+            >
+              FirstTouch
+            </span>
+            <span className="ft-label mt-0.5 hidden sm:block text-[10px]">
+              Quantitative Analytics
+            </span>
+          </div>
         </Link>
 
         {/* 导航 + 用户区 */}
