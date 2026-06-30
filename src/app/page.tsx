@@ -103,7 +103,8 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                   {match.status === "live" && match.score ? (
                     <LiveMatchClock
                       score={match.score}
-                      apiMinute={match.minute}
+                      kickoffDate={match.date}
+                      kickoffTime={match.time}
                       statusDetail={match.statusDetail}
                     />
                   ) : match.status === "finished" && match.score ? (
