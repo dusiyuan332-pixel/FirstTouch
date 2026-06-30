@@ -9,7 +9,9 @@ import { PoissonPanel } from "@/components/PoissonPanel";
 import OddsPanel from "@/components/OddsPanel";
 import H2HPanel from "@/components/H2HPanel";
 import TotalsPanel from "@/components/TotalsPanel";
+import TeamFormPanel from "@/components/TeamFormPanel";
 import { fetchH2H } from "@/lib/h2hApi";
+import { fetchDualTeamIntel } from "@/lib/formApi";
 import { checkAnalystAccess } from "@/components/PaywallGate";
 import LiveRefresher from "@/components/LiveRefresher";
 
@@ -59,6 +61,57 @@ function H2HSkeleton() {
     >
       <p className="ft-label text-[12px]" style={{ color: "var(--ft-text-dim)" }}>
         正在获取历史交锋数据…
+      </p>
+    </div>
+  );
+}
+
+// ─── 近5场状态 + 伤病（独立 Suspense 加载）───────────────────────────────────
+
+async function FormSection({
+  homeName,
+  awayName,
+  homeNameZh,
+  awayNameZh,
+}: {
+  homeName: string;
+  awayName: string;
+  homeNameZh?: string;
+  awayNameZh?: string;
+}) {
+  const PANEL = { border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" } as const;
+  const data = await fetchDualTeamIntel(homeName, awayName).catch(() => null);
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 py-8 text-center" style={PANEL}>
+        <p className="text-[13px] font-medium" style={{ color: "var(--ft-text-muted)" }}>
+          球队状态数据暂不可用
+        </p>
+        <p className="ft-label text-[11px] max-w-xs" style={{ color: "var(--ft-text-dim)" }}>
+          API-Football 100次/天免费额度 · 可能已用尽，请明天重试
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <TeamFormPanel
+      data={data}
+      homeTeamChinese={homeNameZh}
+      awayTeamChinese={awayNameZh}
+    />
+  );
+}
+
+function FormSkeleton() {
+  return (
+    <div
+      className="animate-pulse py-10 text-center"
+      style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
+    >
+      <p className="ft-label text-[12px]" style={{ color: "var(--ft-text-dim)" }}>
+        正在获取球队状态及伤病数据…
       </p>
     </div>
   );
@@ -667,7 +720,22 @@ export default async function MatchAnalysisPage({
           </Suspense>
         </section>
 
-        {/* 7. 球队情报 */}
+        {/* 7. 近5场实时战绩 + 伤病报告 */}
+        <section>
+          <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
+            <p className="ft-label">Form Guide · 近5场状态 + 伤病报告</p>
+          </div>
+          <Suspense fallback={<FormSkeleton />}>
+            <FormSection
+              homeName={match.homeTeam.name}
+              awayName={match.awayTeam.name}
+              homeNameZh={match.homeTeam.nameZh}
+              awayNameZh={match.awayTeam.nameZh}
+            />
+          </Suspense>
+        </section>
+
+        {/* 8. 球队情报 */}
         {detail && <TeamIntelligence match={match} detail={detail} />}
 
         {/* 8. 风险管理 */}
