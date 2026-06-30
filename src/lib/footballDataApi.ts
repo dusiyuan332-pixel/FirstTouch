@@ -311,6 +311,76 @@ export async function fetchTopFiveLeagues(): Promise<LeagueStandings[]> {
     .map((r) => r.value);
 }
 
+// ── 世界杯射手榜 ──────────────────────────────────────────────────────────────
+
+export interface WCScorer {
+  rank: number;
+  player: {
+    id: number;
+    name: string;
+    nationality: string;
+    position: string | null;
+    shirtNumber: number | null;
+  };
+  team: {
+    id: number;
+    name: string;
+    nameZh: string;
+    tla: string;
+    crest: string;
+  };
+  goals: number;
+  assists: number;
+  penalties: number;
+  playedMatches: number;
+}
+
+interface FDScorersResponse {
+  scorers: Array<{
+    player: {
+      id: number;
+      name: string;
+      nationality: string;
+      position: string | null;
+      shirtNumber: number | null;
+    };
+    team: FDTeam;
+    goals: number;
+    assists: number | null;
+    penalties: number | null;
+    playedMatches: number;
+  }>;
+}
+
+/**
+ * 获取世界杯射手榜（最多前20名，缓存 10 分钟）
+ */
+export async function fetchWC2026Scorers(limit = 20): Promise<WCScorer[]> {
+  try {
+    const data = await fdFetch<FDScorersResponse>(
+      `/competitions/WC/scorers?limit=${limit}&season=2026`,
+      600
+    );
+    return data.scorers.map((s, i) => ({
+      rank: i + 1,
+      player: s.player,
+      team: {
+        id: s.team.id,
+        name: s.team.name,
+        nameZh: ZH_NAME[s.team.tla] ?? s.team.shortName ?? s.team.name,
+        tla: s.team.tla,
+        crest: s.team.crest,
+      },
+      goals: s.goals,
+      assists: s.assists ?? 0,
+      penalties: s.penalties ?? 0,
+      playedMatches: s.playedMatches,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 // ── 工具函数（供页面使用）────────────────────────────────────────────────────
 
 export function groupByDate(matches: DisplayMatch[]): Map<string, DisplayMatch[]> {

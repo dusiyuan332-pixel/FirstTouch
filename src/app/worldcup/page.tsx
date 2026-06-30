@@ -2,7 +2,8 @@ import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import ScheduleMatchCard from "@/components/ScheduleMatchCard";
 import ScheduleDateNav from "@/components/ScheduleDateNav";
-import { fetchWC2026Matches, groupByDate, getUniqueDates, formatDate } from "@/lib/footballDataApi";
+import WCTopScorers from "@/components/WCTopScorers";
+import { fetchWC2026Matches, fetchWC2026Scorers, groupByDate, getUniqueDates, formatDate } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 import { computeQuickPrediction } from "@/lib/quickPredict";
 
@@ -10,9 +11,15 @@ import { computeQuickPrediction } from "@/lib/quickPredict";
 const TODAY = new Date().toISOString().slice(0, 10);
 
 export default async function WorldCupPage() {
-  let allMatches = await fetchWC2026Matches(PREDICTIONS).catch(() => null);
+  const [allMatchesRaw, scorers] = await Promise.allSettled([
+    fetchWC2026Matches(PREDICTIONS),
+    fetchWC2026Scorers(15),
+  ]);
+
+  let allMatches = allMatchesRaw.status === "fulfilled" ? allMatchesRaw.value : null;
   const isRealData = allMatches !== null;
   if (!allMatches) allMatches = [];
+  const scorerList = scorers.status === "fulfilled" ? scorers.value : [];
 
   const cutoff = new Date(TODAY);
   cutoff.setDate(cutoff.getDate() - 2);
@@ -90,6 +97,26 @@ export default async function WorldCupPage() {
       </div>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 md:px-8 py-6 md:py-10 space-y-10 md:space-y-12">
+
+        {/* 射手榜 */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="ft-label mb-1">FIFA World Cup 2026</p>
+              <h2 className="ft-heading text-base font-semibold" style={{ color: "var(--ft-navy)" }}>
+                射手榜 · Top Scorers
+              </h2>
+            </div>
+            {scorerList.length > 0 && (
+              <span className="ft-label text-[11px]">
+                前 {scorerList.length} 名
+              </span>
+            )}
+          </div>
+          <WCTopScorers scorers={scorerList} />
+        </section>
+
+        {/* 赛程 */}
         {visibleMatches.length > 0 ? (
           dates.map((date) => {
             const matches = byDate.get(date) ?? [];
@@ -153,6 +180,7 @@ export default async function WorldCupPage() {
             </Link>
           </div>
         )}
+        {/* end 赛程 */}
 
         <p className="ft-label text-center pb-6" style={{ color: "var(--ft-text-dim)" }}>
           Data: football-data.org · Predictions for reference only · Not betting advice · © 2026 FirstTouch
