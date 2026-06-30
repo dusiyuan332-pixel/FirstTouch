@@ -8,6 +8,7 @@ import { PREDICTIONS, DETAILED_ANALYSIS, type DetailedAnalysis } from "@/data/wc
 import { PoissonPanel } from "@/components/PoissonPanel";
 import OddsPanel from "@/components/OddsPanel";
 import H2HPanel from "@/components/H2HPanel";
+import TotalsPanel from "@/components/TotalsPanel";
 import { fetchH2H } from "@/lib/h2hApi";
 import { checkAnalystAccess } from "@/components/PaywallGate";
 import LiveRefresher from "@/components/LiveRefresher";
@@ -634,6 +635,21 @@ export default async function MatchAnalysisPage({
             modelAwayProb={(match.prediction?.awayWin ?? 30) / 100}
           />
         </section>
+
+        {/* 4b. 大小球赔率 */}
+        {match.prediction && (
+          <section>
+            <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
+              <p className="ft-label">Over / Under · 大小球赔率</p>
+            </div>
+            <TotalsPanel
+              homeTeam={match.homeTeam.name}
+              awayTeam={match.awayTeam.name}
+              xGoalsHome={match.prediction.xGoalsHome}
+              xGoalsAway={match.prediction.xGoalsAway}
+            />
+          </section>
+        )}
 
         {/* 5. Python 泊松实时模型 */}
         <PoissonPanel match={match} />

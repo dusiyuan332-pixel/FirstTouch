@@ -12,8 +12,9 @@ const API_KEY = process.env.ODDS_API_KEY ?? "";
 // ─── 原始 API 类型 ─────────────────────────────────────────────────────────
 
 interface OddsOutcome {
-  name: string;      // "Brazil" | "Draw" | "Japan"
+  name: string;      // "Brazil" | "Draw" | "Japan" | "Over" | "Under"
   price: number;     // Decimal odds，如 1.72
+  point?: number;    // 仅 totals market 有此字段，如 2.5
 }
 
 interface OddsMarket {
@@ -56,7 +57,7 @@ export interface MatchOdds {
   awayTeam: string;
   commenceTime: string;
   bookmakers: BookmakerOdds[];
-  consensus: {              // 多家均值
+  consensus: {
     homeWin: number;
     draw: number;
     awayWin: number;
@@ -64,7 +65,30 @@ export interface MatchOdds {
     drawImplied: number;
     awayImplied: number;
   } | null;
+  totals: TotalsOdds | null;   // 大小球数据（同一请求获取）
   remainingCredits: number;
+}
+
+// ─── 大小球类型 ────────────────────────────────────────────────────────────
+
+export interface TotalsBookmaker {
+  bookmaker: string;
+  line: number;         // 2.5 / 3.5
+  overOdds: number;
+  underOdds: number;
+  overImplied: number;  // %
+  underImplied: number;
+}
+
+export interface TotalsOdds {
+  line: number;         // 最多庄家支持的盘口（通常 2.5）
+  bookmakers: TotalsBookmaker[];
+  consensus: {
+    overOdds: number;
+    underOdds: number;
+    overImplied: number;
+    underImplied: number;
+  } | null;
 }
 
 // ─── 辅助 ────────────────────────────────────────────────────────────────
@@ -85,11 +109,11 @@ export async function fetchMatchOdds(
 ): Promise<MatchOdds | null> {
   if (!API_KEY) return null;
 
-  // 只请求 6 家主流庄家，减少数据量（credit 消耗不变，但响应更小）
+  // h2h + totals 合并在同一请求中，credit 消耗不变
   const TOP_BOOKMAKERS = "bet365,pinnacle,williamhill,betfair,unibet,betsson";
   const url =
     `${BASE}/sports/soccer_fifa_world_cup/odds` +
-    `?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal&bookmakers=${TOP_BOOKMAKERS}`;
+    `?apiKey=${API_KEY}&regions=eu&markets=h2h,totals&oddsFormat=decimal&bookmakers=${TOP_BOOKMAKERS}`;
 
   let events: OddsEvent[];
   let remainingCredits = 0;
@@ -143,8 +167,8 @@ export async function fetchMatchOdds(
 
   if (bookmakers.length === 0) return null;
 
-  // 计算共识均值
   const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
+
   const consensus = {
     homeWin:     Math.round(avg(bookmakers.map((b) => b.homeWin)) * 100) / 100,
     draw:        Math.round(avg(bookmakers.map((b) => b.draw))    * 100) / 100,
@@ -154,6 +178,59 @@ export async function fetchMatchOdds(
     awayImplied: Math.round(avg(bookmakers.map((b) => b.awayImplied)) * 10) / 10,
   };
 
+  // ── 解析大小球 totals ──────────────────────────────────────────────────────
+  // 按盘口（point）分组，选出庄家最多的那条线（通常是 2.5）
+  const lineMap = new Map<number, TotalsBookmaker[]>();
+
+  for (const bk of event.bookmakers) {
+    const totalsMarket = bk.markets.find((m) => m.key === "totals");
+    if (!totalsMarket) continue;
+
+    // 按 point 分组
+    const byPoint = new Map<number, { over: number; under: number }>();
+    for (const o of totalsMarket.outcomes) {
+      if (o.point === undefined) continue;
+      const entry = byPoint.get(o.point) ?? { over: 0, under: 0 };
+      if (o.name === "Over")  entry.over  = o.price;
+      if (o.name === "Under") entry.under = o.price;
+      byPoint.set(o.point, entry);
+    }
+
+    byPoint.forEach((prices, line) => {
+      if (!prices.over || !prices.under) return;
+      const rows = lineMap.get(line) ?? [];
+      rows.push({
+        bookmaker:    bk.title,
+        line,
+        overOdds:     prices.over,
+        underOdds:    prices.under,
+        overImplied:  impliedProb(prices.over),
+        underImplied: impliedProb(prices.under),
+      });
+      lineMap.set(line, rows);
+    });
+  }
+
+  // 选庄家数量最多的盘口
+  let bestRows: TotalsBookmaker[] = [];
+  let bestLine = 2.5;
+  lineMap.forEach((rows, line) => {
+    if (rows.length > bestRows.length) { bestRows = rows; bestLine = line; }
+  });
+
+  const totals: TotalsOdds | null = bestRows.length > 0
+    ? {
+        line: bestLine,
+        bookmakers: bestRows,
+        consensus: {
+          overOdds:     Math.round(avg(bestRows.map((b) => b.overOdds))     * 100) / 100,
+          underOdds:    Math.round(avg(bestRows.map((b) => b.underOdds))    * 100) / 100,
+          overImplied:  Math.round(avg(bestRows.map((b) => b.overImplied))  * 10)  / 10,
+          underImplied: Math.round(avg(bestRows.map((b) => b.underImplied)) * 10)  / 10,
+        },
+      }
+    : null;
+
   return {
     eventId: event.id,
     homeTeam: event.home_team,
@@ -161,6 +238,7 @@ export async function fetchMatchOdds(
     commenceTime: event.commence_time,
     bookmakers,
     consensus,
+    totals,
     remainingCredits,
   };
 }
