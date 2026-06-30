@@ -5,20 +5,23 @@ import ScheduleDateNav from "@/components/ScheduleDateNav";
 import WCScorersWidget from "@/components/WCScorersWidget";
 import {
   fetchWC2026Matches,
+  fetchWC2026Scorers,
   groupByDate,
   getUniqueDates,
   formatDate,
 } from "@/lib/footballDataApi";
-import { fetchWCTopScorersWithPhotos } from "@/lib/api";
 import { PREDICTIONS } from "@/data/wc2026";
 import { computeQuickPrediction } from "@/lib/quickPredict";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
+// 侧边栏宽度（rem），与左侧等宽占位保持一致
+const SIDEBAR_W = "15rem"; // 240px
+
 export default async function WorldCupPage() {
   const [allMatchesRaw, scorersRaw] = await Promise.allSettled([
     fetchWC2026Matches(PREDICTIONS),
-    fetchWCTopScorersWithPhotos(5),
+    fetchWC2026Scorers(5),
   ]);
 
   let allMatches = allMatchesRaw.status === "fulfilled" ? allMatchesRaw.value : null;
@@ -56,9 +59,9 @@ export default async function WorldCupPage() {
       <SiteNav activeSection="worldcup" />
       {dates.length > 0 && <ScheduleDateNav dates={dates} todayDate={TODAY} />}
 
-      {/* 页头 */}
+      {/* ── 页头（保持原有 max-w-5xl 居中）── */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto max-w-6xl px-4 md:px-8 py-6 md:py-8">
+        <div className="mx-auto max-w-5xl px-4 md:px-8 py-6 md:py-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <p className="ft-label mb-2">FIFA World Cup 2026 · Match Schedule</p>
@@ -75,7 +78,6 @@ export default async function WorldCupPage() {
                 </span>
               </div>
             </div>
-
             <div
               className="px-5 py-4"
               style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
@@ -92,11 +94,23 @@ export default async function WorldCupPage() {
         </div>
       </div>
 
-      {/* ── 两列主体 ── */}
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 md:px-8 py-6 md:py-10">
-        <div className="flex gap-6 items-start">
+      {/* ══════════════════════════════════════════════════════════════════════
+          三列对称布局：[左占位] [居中赛程] [右射手榜]
+          左占位宽度 = 右侧边栏宽度，确保赛程列始终居中
+          ════════════════════════════════════════════════════════════════════ */}
+      <div
+        className="mx-auto w-full flex-1 px-4 md:px-6 py-6 md:py-10"
+        style={{ maxWidth: `calc(80rem + 2 * ${SIDEBAR_W} + 2 * 1.5rem)` }}
+      >
+        <div className="flex items-start gap-6">
 
-          {/* ── 左侧：赛程 ── */}
+          {/* ── 左占位（仅 xl 以上显示，与右侧等宽，让中间列居中）── */}
+          <div
+            className="hidden xl:block shrink-0"
+            style={{ width: SIDEBAR_W }}
+          />
+
+          {/* ── 中间：赛程（max-w-5xl，自然居中）── */}
           <main className="min-w-0 flex-1 space-y-10 md:space-y-12">
             {visibleMatches.length > 0 ? (
               dates.map((date) => {
@@ -132,7 +146,7 @@ export default async function WorldCupPage() {
                       <span className="ft-label">{matches.length} 场</span>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {matches.map((match) => (
                         <ScheduleMatchCard key={match.id} match={match} />
                       ))}
@@ -148,11 +162,7 @@ export default async function WorldCupPage() {
                 <p className="mt-2 text-[13px]" style={{ color: "var(--ft-text-muted)" }}>
                   请检查 FOOTBALL_DATA_KEY 并重启开发服务器
                 </p>
-                <Link
-                  href="/"
-                  className="mt-4 inline-block text-[13px] no-underline"
-                  style={{ color: "var(--ft-blue)" }}
-                >
+                <Link href="/" className="mt-4 inline-block text-[13px] no-underline" style={{ color: "var(--ft-blue)" }}>
                   返回主界面
                 </Link>
               </div>
@@ -163,24 +173,13 @@ export default async function WorldCupPage() {
             </p>
           </main>
 
-          {/* ── 右侧：射手榜侧边栏（lg 以上显示，吸顶）── */}
-          <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-6 space-y-4">
+          {/* ── 右侧：射手榜（吸顶，xl 以上显示）── */}
+          <aside
+            className="hidden xl:block shrink-0"
+            style={{ width: SIDEBAR_W }}
+          >
+            <div className="sticky top-6">
               <WCScorersWidget scorers={scorers} />
-
-              {/* 小提示卡 */}
-              <div
-                className="px-4 py-3"
-                style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
-              >
-                <p className="ft-label text-[10px] mb-1">数据来源</p>
-                <p className="text-[12px] font-medium" style={{ color: "var(--ft-navy)" }}>
-                  API-Football
-                </p>
-                <p className="ft-label text-[10px] mt-1" style={{ color: "var(--ft-text-dim)" }}>
-                  头像 · 进球 · 助攻 · 10min 缓存
-                </p>
-              </div>
             </div>
           </aside>
 

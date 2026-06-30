@@ -1,42 +1,26 @@
 import Image from "next/image";
-import type { ScorerWithPhoto } from "@/lib/api";
+import type { WCScorer } from "@/lib/footballDataApi";
 
 interface Props {
-  scorers: ScorerWithPhoto[];
-  /** football-data.org 补充数据（无头像时的 fallback） */
-  maxGoals?: number;
+  scorers: WCScorer[];
 }
 
 const RANK_COLORS: Record<number, string> = {
   1: "#b8860b", // gold
-  2: "#6b7280", // silver-ish
-  3: "#92400e", // bronze-ish
+  2: "#6b7280", // silver
+  3: "#92400e", // bronze
 };
 
-function Avatar({
-  src,
-  name,
-  size = 44,
-}: {
-  src: string;
-  name: string;
-  size?: number;
-}) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .slice(-2)
-    .join("")
-    .toUpperCase();
+/** 队徽作为头像（圆形裁切） */
+function CrestAvatar({ src, name, size = 44 }: { src: string; name: string; size?: number }) {
+  const initials = name.slice(0, 3).toUpperCase();
 
   if (!src) {
     return (
       <div
-        className="flex shrink-0 items-center justify-center font-mono text-[11px] font-bold"
+        className="flex shrink-0 items-center justify-center font-mono text-[10px] font-bold"
         style={{
-          width: size,
-          height: size,
-          borderRadius: "50%",
+          width: size, height: size, borderRadius: "50%",
           backgroundColor: "var(--ft-bg-panel)",
           border: "1px solid var(--ft-border)",
           color: "var(--ft-text-dim)",
@@ -49,15 +33,20 @@ function Avatar({
 
   return (
     <div
-      className="relative shrink-0 overflow-hidden"
-      style={{ width: size, height: size, borderRadius: "50%", border: "1px solid var(--ft-border)" }}
+      className="relative shrink-0 flex items-center justify-center"
+      style={{
+        width: size, height: size, borderRadius: "50%",
+        border: "1.5px solid var(--ft-border)",
+        backgroundColor: "var(--ft-bg-section)",
+        overflow: "hidden",
+      }}
     >
       <Image
         src={src}
         alt={name}
-        width={size}
-        height={size}
-        className="object-cover object-top"
+        width={size - 8}
+        height={size - 8}
+        className="object-contain"
         unoptimized
       />
     </div>
@@ -84,9 +73,9 @@ function GoalBar({ goals, max }: { goals: number; max: number }) {
   );
 }
 
-export default function WCScorersWidget({ scorers, maxGoals }: Props) {
+export default function WCScorersWidget({ scorers }: Props) {
   const top = scorers.slice(0, 5);
-  const highest = maxGoals ?? (top[0]?.goals ?? 1);
+  const highest = top[0]?.goals ?? 1;
 
   return (
     <div
@@ -125,10 +114,9 @@ export default function WCScorersWidget({ scorers, maxGoals }: Props) {
               className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--ft-bg-section)]"
               style={{ borderTop: "1px solid var(--ft-border)" }}
             >
-              {/* 头像 */}
-              <div className="relative">
-                <Avatar src={s.player.photo} name={s.player.fullName} size={44} />
-                {/* 排名角标 */}
+              {/* 队徽头像 + 排名角标 */}
+              <div className="relative shrink-0">
+                <CrestAvatar src={s.team.crest} name={s.team.tla} size={40} />
                 <span
                   className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center font-mono text-[9px] font-bold"
                   style={{
@@ -144,36 +132,18 @@ export default function WCScorersWidget({ scorers, maxGoals }: Props) {
 
               {/* 信息区 */}
               <div className="min-w-0 flex-1">
-                {/* 姓名 */}
-                <p
-                  className="truncate text-[13px] font-semibold leading-tight"
-                  style={{ color: "var(--ft-text)" }}
-                >
-                  {s.player.fullName || s.player.name}
+                <p className="truncate text-[13px] font-semibold leading-tight" style={{ color: "var(--ft-text)" }}>
+                  {s.player.name}
                 </p>
-                {/* 球队 */}
-                <div className="mt-0.5 flex items-center gap-1">
-                  {s.team.logo && (
-                    <Image
-                      src={s.team.logo}
-                      alt={s.team.name}
-                      width={12}
-                      height={12}
-                      className="object-contain"
-                      unoptimized
-                    />
-                  )}
-                  <span className="text-[11px]" style={{ color: "var(--ft-text-dim)" }}>
-                    {s.player.nationality}
-                  </span>
-                </div>
-                {/* 进球条 */}
+                <p className="text-[11px] leading-tight" style={{ color: "var(--ft-text-dim)" }}>
+                  {s.team.nameZh || s.team.name}
+                </p>
                 <div className="mt-1.5">
                   <GoalBar goals={s.goals} max={highest} />
                 </div>
               </div>
 
-              {/* 数字区 */}
+              {/* 进球 + 助攻 */}
               <div className="shrink-0 text-right">
                 <span
                   className="font-mono text-xl font-black tabular-nums leading-none"
@@ -181,8 +151,8 @@ export default function WCScorersWidget({ scorers, maxGoals }: Props) {
                 >
                   {s.goals}
                 </span>
-                <p className="ft-label text-[9px] leading-none mt-0.5">
-                  {s.assists > 0 ? `+${s.assists}A` : "G"}
+                <p className="ft-label text-[10px] leading-none mt-0.5" style={{ color: "var(--ft-text-dim)" }}>
+                  {s.assists > 0 ? `+${s.assists}A` : "进球"}
                 </p>
               </div>
             </div>
@@ -196,7 +166,7 @@ export default function WCScorersWidget({ scorers, maxGoals }: Props) {
         style={{ borderTop: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}
       >
         <p className="ft-label text-[10px]" style={{ color: "var(--ft-text-dim)" }}>
-          API-Football · 每 10 分钟更新
+          football-data.org · 每 10 分钟更新
         </p>
       </div>
     </div>
