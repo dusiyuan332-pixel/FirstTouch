@@ -6,6 +6,8 @@ import { fetchMatchById, type DisplayMatch, type RatingType } from "@/lib/footba
 import { PREDICTIONS, DETAILED_ANALYSIS, type DetailedAnalysis } from "@/data/wc2026";
 import { PoissonPanel } from "@/components/PoissonPanel";
 import OddsPanel from "@/components/OddsPanel";
+import H2HPanel from "@/components/H2HPanel";
+import { fetchH2H } from "@/lib/h2hApi";
 import { checkAnalystAccess } from "@/components/PaywallGate";
 import LiveRefresher from "@/components/LiveRefresher";
 
@@ -541,6 +543,9 @@ export default async function MatchAnalysisPage({
   const key = `${match.homeTeam.code}-${match.awayTeam.code}`;
   const detail: DetailedAnalysis | null = DETAILED_ANALYSIS[key] ?? null;
 
+  // H2H 数据（API-Football，缓存 24h，失败时静默降级）
+  const h2hData = await fetchH2H(match.homeTeam.name, match.awayTeam.name).catch(() => null);
+
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
       <SiteNav activeSection="match" />
@@ -583,13 +588,27 @@ export default async function MatchAnalysisPage({
         {/* 5. Python 泊松实时模型 */}
         <PoissonPanel match={match} />
 
-        {/* 5. 球队情报 */}
+        {/* 6. H2H 历史交锋 */}
+        {h2hData && (
+          <section>
+            <div className="mb-3" style={{ borderLeft: "3px solid var(--ft-navy)", paddingLeft: "12px" }}>
+              <p className="ft-label">Historical Context · 历史交锋</p>
+            </div>
+            <H2HPanel
+              h2h={h2hData}
+              currentHomeName={match.homeTeam.name}
+              currentAwayName={match.awayTeam.name}
+            />
+          </section>
+        )}
+
+        {/* 7. 球队情报 */}
         {detail && <TeamIntelligence match={match} detail={detail} />}
 
-        {/* 6. 风险管理 */}
+        {/* 8. 风险管理 */}
         {detail && <RiskPanel match={match} detail={detail} />}
 
-        {/* 7. 高级模型占位 */}
+        {/* 9. 高级模型占位 */}
         <PythonModelPlaceholder match={match} />
 
         {/* 报告底部 */}
