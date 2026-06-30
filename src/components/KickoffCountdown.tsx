@@ -89,8 +89,8 @@ export default function KickoffCountdown({ dateStr, timeStr, variant = "card", f
             {elapsedMin}&apos;{String(elapsedSec).padStart(2, "0")}
           </span>
         </div>
-        <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>
-          LIVE · API 同步中
+        <span className="font-mono text-[9px] uppercase tracking-wider" style={{ color: "var(--ft-text-dim)" }}>
+          LIVE · SYNC_PENDING
         </span>
       </div>
     );
@@ -115,11 +115,13 @@ export default function KickoffCountdown({ dateStr, timeStr, variant = "card", f
 
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="ft-label" style={{ color: "var(--ft-red)" }}>KICKOFF IN</span>
+      <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--ft-red)" }}>
+        KICKOFF_IN
+      </span>
       <span className="font-mono text-xl font-black tabular-nums leading-none" style={{ color: "var(--ft-red)" }}>
         {fmt(secs)}
       </span>
-      <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>UTC</span>
+      <span className="font-mono text-[9px]" style={{ color: "var(--ft-text-dim)" }}>UTC</span>
     </div>
   );
 }

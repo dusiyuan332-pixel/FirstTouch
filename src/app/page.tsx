@@ -66,13 +66,30 @@ function QuantCard({ match }: { match: DisplayMatch }) {
       >
         {/* 卡头 */}
         <div
-          className="flex items-center justify-between px-5 py-3"
+          className="flex items-center justify-between px-5 py-2.5"
           style={{ borderBottom: "1px solid var(--ft-divider)" }}
         >
-          <span className="ft-label">{match.group ?? match.stage}</span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ft-text-dim)" }}>
+              {match.group ?? match.stage}
+            </span>
+            {/* Model status badge */}
+            <span
+              className="font-mono text-[9px] px-1.5 py-0.5 border"
+              style={{
+                color: "var(--ft-blue)",
+                backgroundColor: "rgba(0,51,160,0.04)",
+                borderColor: "rgba(0,51,160,0.15)",
+              }}
+            >
+              Model Inference: Ready
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
             {isLive && (
-              <span className="ft-label" style={{ color: "var(--ft-red)" }}>LIVE</span>
+              <span className="font-mono text-[10px] font-bold animate-pulse" style={{ color: "var(--ft-red)" }}>
+                ● LIVE
+              </span>
             )}
             {meta ? (
               <span
@@ -82,8 +99,8 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                 {meta.label}
               </span>
             ) : (
-              <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>
-                模型分析中
+              <span className="font-mono text-[10px]" style={{ color: "var(--ft-text-dim)" }}>
+                SIGNAL: PENDING
               </span>
             )}
           </div>
@@ -124,13 +141,15 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                       timeStr={match.time}
                       variant="card"
                       fallback={
-                        <span
-                          className="font-mono text-base font-semibold"
-                          style={{ color: "var(--ft-text-muted)" }}
-                        >
-                          {match.time}
-                          <span className="block text-center ft-label mt-0.5">UTC</span>
-                        </span>
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
+                            KICKOFF_AT
+                          </span>
+                          <span className="font-mono text-base font-bold tabular-nums" style={{ color: "var(--ft-navy)" }}>
+                            {match.time}
+                          </span>
+                          <span className="font-mono text-[9px]" style={{ color: "var(--ft-text-dim)" }}>UTC</span>
+                        </div>
                       }
                     />
                   )}
@@ -155,25 +174,35 @@ function QuantCard({ match }: { match: DisplayMatch }) {
                   <p className="text-sm font-semibold" style={{ color: "var(--ft-navy)" }}>
                     {item.team.nameZh || item.team.name}
                   </p>
-                  <p className="ft-label mt-0.5">{item.team.code} · {item.side}</p>
+                  <p className="font-mono text-[10px] mt-0.5 uppercase tracking-wide" style={{ color: "var(--ft-text-dim)" }}>
+                    {item.team.code} · {item.side}
+                  </p>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* 概率条（有静态预测时显示） */}
+        {/* 概率条 */}
         {pred ? (
           <div className="px-5 pb-4 space-y-1.5">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
+                Alpha Signal: High
+              </span>
+              <span className="font-mono text-[9px]" style={{ color: "var(--ft-text-dim)" }}>
+                Conf. {pred.confidenceScore}/100
+              </span>
+            </div>
             <div className="flex h-1 overflow-hidden" style={{ backgroundColor: "var(--ft-bg-panel)" }}>
               <div style={{ width: `${pred.homeWin}%`, backgroundColor: "var(--ft-sky)" }} />
               <div style={{ width: `${pred.draw}%`, backgroundColor: "var(--ft-text-dim)" }} />
               <div style={{ width: `${pred.awayWin}%`, backgroundColor: "var(--ft-red)" }} />
             </div>
             <div className="flex justify-between">
-              <span className="ft-label" style={{ color: "var(--ft-sky)" }}>{pred.homeWin}%</span>
-              <span className="ft-label">{pred.draw}%</span>
-              <span className="ft-label" style={{ color: "var(--ft-red)" }}>{pred.awayWin}%</span>
+              <span className="font-mono text-[11px]" style={{ color: "var(--ft-sky)" }}>{pred.homeWin}%</span>
+              <span className="font-mono text-[11px]" style={{ color: "var(--ft-text-dim)" }}>{pred.draw}%</span>
+              <span className="font-mono text-[11px]" style={{ color: "var(--ft-red)" }}>{pred.awayWin}%</span>
             </div>
           </div>
         ) : (
@@ -181,28 +210,27 @@ function QuantCard({ match }: { match: DisplayMatch }) {
             <div className="flex h-1 overflow-hidden" style={{ backgroundColor: "var(--ft-bg-panel)" }}>
               <div className="h-full w-full animate-pulse" style={{ backgroundColor: "var(--ft-border)" }} />
             </div>
-            <p className="mt-1.5 ft-label text-center">Python 模型实时计算中 · 点击查看</p>
+            <p className="mt-1.5 font-mono text-[10px] text-center" style={{ color: "var(--ft-text-dim)" }}>
+              SIGNAL: COMPUTING... | 算力推演中
+            </p>
           </div>
         )}
 
-        {/* 底部 */}
+        {/* 底部控制台风格栏 */}
         <div
-          className="flex items-center justify-between px-5 py-3"
+          className="flex items-center justify-between px-5 py-2.5"
           style={{ borderTop: "1px solid var(--ft-divider)", backgroundColor: "var(--ft-bg-panel)" }}
         >
-          <p
-            className="text-[12px] leading-snug line-clamp-1"
-            style={{ color: "var(--ft-text-muted)" }}
-          >
+          <p className="font-mono text-[11px] leading-snug line-clamp-1" style={{ color: "var(--ft-text-muted)" }}>
             {pred
-              ? (pred.insight || `置信度 ${pred.confidenceScore} · ${pred.ratingTarget}`)
-              : `${match.date} · ${match.time} UTC · 点击进入分析`}
+              ? `> ${match.date} · ${match.time} UTC · ${pred.ratingTarget}`
+              : `> ${match.date} · ${match.time} UTC · Quantitative Report Generating`}
           </p>
           <span
-            className="ml-3 shrink-0 text-[12px] font-medium transition-colors group-hover:text-[color:var(--ft-navy)]"
+            className="ml-3 shrink-0 font-mono text-[11px] transition-colors group-hover:text-[color:var(--ft-navy)]"
             style={{ color: "var(--ft-blue)" }}
           >
-            查看报告 →
+            研报 →
           </span>
         </div>
       </div>
@@ -265,17 +293,21 @@ export default async function HomePage() {
       {/* Hero */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
         <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-14">
-          <p className="ft-label mb-3 md:mb-4">FirstTouch · Quantitative Sports Analytics</p>
-          <h1 className="ft-heading text-2xl md:text-4xl font-semibold leading-snug" style={{ maxWidth: "520px" }}>
-            Every decision begins<br />
-            <span style={{ fontStyle: "italic" }}>with the first touch.</span>
+          <p className="ft-label mb-3 md:mb-4 font-mono tracking-widest uppercase text-[10px]">
+            FirstTouch · Quantitative Sports Analytics
+          </p>
+          <h1 className="ft-heading font-semibold leading-tight" style={{ maxWidth: "600px" }}>
+            <span className="block text-2xl md:text-[2.6rem]">Quantifying the Genesis of Decision.</span>
+            <span className="block text-xl md:text-3xl mt-1" style={{ fontStyle: "italic", color: "var(--ft-navy)" }}>
+              量化决断之始。
+            </span>
           </h1>
           <p
-            className="mt-4 md:mt-6 text-[13px] md:text-[14px] leading-relaxed"
-            style={{ color: "var(--ft-text-muted)", maxWidth: "480px" }}
+            className="mt-5 md:mt-7 text-[13px] md:text-[14px] leading-relaxed font-sans"
+            style={{ color: "var(--ft-text-muted)", maxWidth: "520px" }}
           >
-            足球场上的一次触球，在神经系统中预载了之后所有的决策——
-            这正是我们构建量化模型的起点。捕捉每场对局的隐含价值。
+            足球场上的第一次触球，即是战术执行的输入层（Input Layer）。FirstTouch 通过底层神经网络，
+            在球权转换的毫秒间预演决策拓扑，为您锚定每一场对局的隐含期望收益（EV）。
           </p>
         </div>
       </div>
@@ -285,9 +317,9 @@ export default async function HomePage() {
         {/* ── 量化精选 ── */}
         <section>
           <SectionHeading
-            label="Quant Picks · 量化精选"
+            label="QUANT PICKS · 量化精选"
             title="近期推荐对局"
-            sub="模型自动筛选 · 按开赛时间最近排序"
+            sub="算法基准筛选 | 按算力预演置信度动态排序"
             action={
               <Link
                 href="/worldcup"
@@ -321,9 +353,9 @@ export default async function HomePage() {
         {/* ── 五大联赛 ── */}
         <section>
           <SectionHeading
-            label="Top 5 European Leagues · 五大联赛"
-            title="2025/26 赛季终榜"
-            sub="刚结束的赛季 · 最终积分榜"
+            label="MACRO ENVIRONMENT · 宏观基本面基准"
+            title="标的能力复盘"
+            sub="2025/26 赛季全量标的收益表现与能力拓扑复盘"
             action={
               <span
                 className="font-mono text-[10px] px-3 py-1.5 uppercase tracking-wider"
