@@ -2,24 +2,29 @@ import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import ScheduleMatchCard from "@/components/ScheduleMatchCard";
 import ScheduleDateNav from "@/components/ScheduleDateNav";
-import WCTopScorers from "@/components/WCTopScorers";
-import { fetchWC2026Matches, fetchWC2026Scorers, groupByDate, getUniqueDates, formatDate } from "@/lib/footballDataApi";
+import WCScorersWidget from "@/components/WCScorersWidget";
+import {
+  fetchWC2026Matches,
+  groupByDate,
+  getUniqueDates,
+  formatDate,
+} from "@/lib/footballDataApi";
+import { fetchWCTopScorersWithPhotos } from "@/lib/api";
 import { PREDICTIONS } from "@/data/wc2026";
 import { computeQuickPrediction } from "@/lib/quickPredict";
 
-// 动态计算今日 UTC 日期，确保不因服务器时区偏差显示昨天
 const TODAY = new Date().toISOString().slice(0, 10);
 
 export default async function WorldCupPage() {
-  const [allMatchesRaw, scorers] = await Promise.allSettled([
+  const [allMatchesRaw, scorersRaw] = await Promise.allSettled([
     fetchWC2026Matches(PREDICTIONS),
-    fetchWC2026Scorers(15),
+    fetchWCTopScorersWithPhotos(5),
   ]);
 
   let allMatches = allMatchesRaw.status === "fulfilled" ? allMatchesRaw.value : null;
   const isRealData = allMatches !== null;
   if (!allMatches) allMatches = [];
-  const scorerList = scorers.status === "fulfilled" ? scorers.value : [];
+  const scorers = scorersRaw.status === "fulfilled" ? scorersRaw.value : [];
 
   const cutoff = new Date(TODAY);
   cutoff.setDate(cutoff.getDate() - 2);
@@ -28,7 +33,6 @@ export default async function WorldCupPage() {
   const visibleMatches = allMatches
     .filter((m) => m.date >= cutoffStr)
     .map((m) => {
-      // 若无静态预测，且比赛已开放分析（已结束 / 3天内），用轻量模型补全
       if (!m.prediction) {
         const days = Math.ceil(
           (new Date(`${m.date}T${m.time}:00Z`).getTime() - Date.now()) / 86400000
@@ -44,7 +48,6 @@ export default async function WorldCupPage() {
 
   const dates = getUniqueDates(visibleMatches);
   const byDate = groupByDate(visibleMatches);
-
   const liveCount     = visibleMatches.filter((m) => m.status === "live").length;
   const upcomingCount = visibleMatches.filter((m) => m.status === "upcoming").length;
 
@@ -55,7 +58,7 @@ export default async function WorldCupPage() {
 
       {/* 页头 */}
       <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto max-w-5xl px-4 md:px-8 py-6 md:py-8">
+        <div className="mx-auto max-w-6xl px-4 md:px-8 py-6 md:py-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <p className="ft-label mb-2">FIFA World Cup 2026 · Match Schedule</p>
@@ -67,22 +70,15 @@ export default async function WorldCupPage() {
                     {liveCount} 场进行中
                   </span>
                 )}
-                <span
-                  className="ft-label"
-                  style={{ color: isRealData ? "var(--ft-green)" : "var(--ft-red)" }}
-                >
+                <span className="ft-label" style={{ color: isRealData ? "var(--ft-green)" : "var(--ft-red)" }}>
                   {isRealData ? "实时数据" : "API 离线"}
                 </span>
               </div>
             </div>
 
-            {/* 数据来源 */}
             <div
               className="px-5 py-4"
-              style={{
-                border: "1px solid var(--ft-border)",
-                backgroundColor: "var(--ft-bg-card)",
-              }}
+              style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
             >
               <p className="ft-label mb-2">数据来源</p>
               <p className="text-[13px] font-medium" style={{ color: "var(--ft-navy)" }}>
@@ -96,96 +92,100 @@ export default async function WorldCupPage() {
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 md:px-8 py-6 md:py-10 space-y-10 md:space-y-12">
+      {/* ── 两列主体 ── */}
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 md:px-8 py-6 md:py-10">
+        <div className="flex gap-6 items-start">
 
-        {/* 射手榜 */}
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="ft-label mb-1">FIFA World Cup 2026</p>
-              <h2 className="ft-heading text-base font-semibold" style={{ color: "var(--ft-navy)" }}>
-                射手榜 · Top Scorers
-              </h2>
-            </div>
-            {scorerList.length > 0 && (
-              <span className="ft-label text-[11px]">
-                前 {scorerList.length} 名
-              </span>
-            )}
-          </div>
-          <WCTopScorers scorers={scorerList} />
-        </section>
+          {/* ── 左侧：赛程 ── */}
+          <main className="min-w-0 flex-1 space-y-10 md:space-y-12">
+            {visibleMatches.length > 0 ? (
+              dates.map((date) => {
+                const matches = byDate.get(date) ?? [];
+                const isToday = date === TODAY;
+                const isPast  = date < TODAY;
 
-        {/* 赛程 */}
-        {visibleMatches.length > 0 ? (
-          dates.map((date) => {
-            const matches = byDate.get(date) ?? [];
-            const isToday = date === TODAY;
-            const isPast  = date < TODAY;
-
-            return (
-              <section key={date} id={`date-${date}`} className="scroll-mt-28">
-                {/* 日期标题 */}
-                <div className="mb-5 flex items-center gap-4">
-                  <div
-                    className="flex items-center gap-3 py-1"
-                    style={{
-                      borderLeft: `3px solid ${isToday ? "var(--ft-navy)" : isPast ? "var(--ft-text-dim)" : "var(--ft-border)"}`,
-                      paddingLeft: "12px",
-                    }}
-                  >
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: isToday ? "var(--ft-navy)" : isPast ? "var(--ft-text-muted)" : "var(--ft-text)" }}
-                    >
-                      {formatDate(date)}
-                    </span>
-                    {isToday && (
-                      <span
-                        className="font-mono text-[9px] font-bold uppercase px-2 py-0.5"
-                        style={{ backgroundColor: "var(--ft-navy)", color: "#fff" }}
+                return (
+                  <section key={date} id={`date-${date}`} className="scroll-mt-28">
+                    <div className="mb-5 flex items-center gap-4">
+                      <div
+                        className="flex items-center gap-3 py-1"
+                        style={{
+                          borderLeft: `3px solid ${isToday ? "var(--ft-navy)" : isPast ? "var(--ft-text-dim)" : "var(--ft-border)"}`,
+                          paddingLeft: "12px",
+                        }}
                       >
-                        TODAY
-                      </span>
-                    )}
-                  </div>
-                  <span className="ft-label">{matches.length} 场</span>
-                </div>
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: isToday ? "var(--ft-navy)" : isPast ? "var(--ft-text-muted)" : "var(--ft-text)" }}
+                        >
+                          {formatDate(date)}
+                        </span>
+                        {isToday && (
+                          <span
+                            className="font-mono text-[9px] font-bold uppercase px-2 py-0.5"
+                            style={{ backgroundColor: "var(--ft-navy)", color: "#fff" }}
+                          >
+                            TODAY
+                          </span>
+                        )}
+                      </div>
+                      <span className="ft-label">{matches.length} 场</span>
+                    </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {matches.map((match) => (
-                    <ScheduleMatchCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </section>
-            );
-          })
-        ) : (
-          <div
-            className="py-20 text-center"
-            style={{ border: "1px solid var(--ft-border)" }}
-          >
-            <p className="text-sm font-semibold" style={{ color: "var(--ft-navy)" }}>
-              无法加载赛程数据
-            </p>
-            <p className="mt-2 text-[13px]" style={{ color: "var(--ft-text-muted)" }}>
-              请检查 FOOTBALL_DATA_KEY 并重启开发服务器
-            </p>
-            <Link
-              href="/"
-              className="mt-4 inline-block text-[13px] no-underline"
-              style={{ color: "var(--ft-blue)" }}
-            >
-              返回主界面
-            </Link>
-          </div>
-        )}
-        {/* end 赛程 */}
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {matches.map((match) => (
+                        <ScheduleMatchCard key={match.id} match={match} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })
+            ) : (
+              <div className="py-20 text-center" style={{ border: "1px solid var(--ft-border)" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--ft-navy)" }}>
+                  无法加载赛程数据
+                </p>
+                <p className="mt-2 text-[13px]" style={{ color: "var(--ft-text-muted)" }}>
+                  请检查 FOOTBALL_DATA_KEY 并重启开发服务器
+                </p>
+                <Link
+                  href="/"
+                  className="mt-4 inline-block text-[13px] no-underline"
+                  style={{ color: "var(--ft-blue)" }}
+                >
+                  返回主界面
+                </Link>
+              </div>
+            )}
 
-        <p className="ft-label text-center pb-6" style={{ color: "var(--ft-text-dim)" }}>
-          Data: football-data.org · Predictions for reference only · Not betting advice · © 2026 FirstTouch
-        </p>
-      </main>
+            <p className="ft-label text-center pb-6" style={{ color: "var(--ft-text-dim)" }}>
+              Data: football-data.org · Predictions for reference only · Not betting advice · © 2026 FirstTouch
+            </p>
+          </main>
+
+          {/* ── 右侧：射手榜侧边栏（lg 以上显示，吸顶）── */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-6 space-y-4">
+              <WCScorersWidget scorers={scorers} />
+
+              {/* 小提示卡 */}
+              <div
+                className="px-4 py-3"
+                style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-card)" }}
+              >
+                <p className="ft-label text-[10px] mb-1">数据来源</p>
+                <p className="text-[12px] font-medium" style={{ color: "var(--ft-navy)" }}>
+                  API-Football
+                </p>
+                <p className="ft-label text-[10px] mt-1" style={{ color: "var(--ft-text-dim)" }}>
+                  头像 · 进球 · 助攻 · 10min 缓存
+                </p>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </div>
     </div>
   );
 }

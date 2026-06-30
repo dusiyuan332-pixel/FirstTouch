@@ -96,6 +96,90 @@ export async function fetchPremierLeagueStandings(): Promise<TeamStanding[]> {
   return groups[0];
 }
 
+// ─── 世界杯射手榜（含球员头像，API-Football League ID: 1）──────────────────────
+
+export interface ScorerWithPhoto {
+  rank: number;
+  player: {
+    id: number;
+    name: string;         // "K. Mbappé"
+    fullName: string;     // "Kylian Mbappé"
+    photo: string;        // 头像 URL
+    nationality: string;
+  };
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  goals: number;
+  assists: number;
+  matches: number;
+}
+
+interface ApiFScorersResponse {
+  errors: unknown;
+  results: number;
+  response: Array<{
+    player: {
+      id: number;
+      name: string;
+      firstname: string;
+      lastname: string;
+      nationality: string;
+      photo: string;
+    };
+    statistics: Array<{
+      team: { id: number; name: string; logo: string };
+      goals: { total: number | null; assists: number | null };
+      games: { appearences: number | null };
+    }>;
+  }>;
+}
+
+export async function fetchWCTopScorersWithPhotos(limit = 5): Promise<ScorerWithPhoto[]> {
+  const apiKey = process.env.API_FOOTBALL_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const res = await fetch(
+      `https://v3.football.api-sports.io/players/topscorers?league=1&season=2026`,
+      {
+        headers: { "x-apisports-key": apiKey },
+        next: { revalidate: 600 }, // 10 分钟缓存
+      }
+    );
+    if (!res.ok) return [];
+
+    const data: ApiFScorersResponse = await res.json();
+    if (!data.response?.length) return [];
+
+    return data.response.slice(0, limit).map((item, i) => {
+      const stats = item.statistics[0];
+      return {
+        rank: i + 1,
+        player: {
+          id: item.player.id,
+          name: item.player.name,
+          fullName: `${item.player.firstname} ${item.player.lastname}`.trim(),
+          photo: item.player.photo,
+          nationality: item.player.nationality,
+        },
+        team: {
+          id: stats?.team.id ?? 0,
+          name: stats?.team.name ?? "",
+          logo: stats?.team.logo ?? "",
+        },
+        goals: stats?.goals.total ?? 0,
+        assists: stats?.goals.assists ?? 0,
+        matches: stats?.games.appearences ?? 0,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 // ─── 世界杯分组积分榜（League ID: 1）────────────────────────────────────────
 // 优先尝试 2026 赛季（需付费账号），失败则自动降级到 2022 历史数据
 // 返回值：groups 二维数组 + actualSeason（实际拉到哪一年）
