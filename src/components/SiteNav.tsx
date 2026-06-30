@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useUser, UserButton, SignInButton } from "@clerk/nextjs";
+import LogoMark from "@/components/LogoMark";
 
 interface SiteNavProps {
   activeSection?: "dashboard" | "worldcup" | "match";
@@ -31,12 +32,7 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
           className="flex items-center gap-2 md:gap-3 no-underline"
           style={{ color: "var(--ft-navy)" }}
         >
-          <div
-            className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center text-[10px] md:text-[11px] font-black text-white select-none"
-            style={{ backgroundColor: "var(--ft-navy)" }}
-          >
-            FT
-          </div>
+          <LogoMark size={28} color="var(--ft-navy)" />
           <div className="flex flex-col justify-center leading-none">
             <span className="ft-heading text-[15px] md:text-[17px] font-semibold" style={{ letterSpacing: "0.02em" }}>
               FirstTouch

@@ -290,25 +290,110 @@ export default async function HomePage() {
       {/* 有直播比赛时，每 60s 静默刷新主页数据（无 UI，后台运行） */}
       <LiveRefresher isLive={liveCount > 0} silent />
 
-      {/* Hero */}
-      <div style={{ borderBottom: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg-section)" }}>
-        <div className="mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-14">
-          <p className="ft-label mb-3 md:mb-4 font-mono tracking-widest uppercase text-[10px]">
+      {/* ── Hero：罗斯柴尔德全屏风格 ──────────────────────────────────────────── */}
+      {/*
+       * 背景目前使用深海军蓝渐变占位。
+       * 如需替换为真实照片：
+       *   1. 将图片放至 public/hero.jpg
+       *   2. 将渐变 div 替换为：
+       *      <Image src="/hero.jpg" alt="" fill className="object-cover opacity-50" />
+       */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: "62vh", minHeight: "440px", maxHeight: "760px" }}
+      >
+        {/* 深色渐变背景 */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(145deg, #040c18 0%, #08152a 35%, #0c1e3c 65%, #122448 100%)",
+          }}
+        />
+
+        {/* 微妙点阵纹理（增加质感） */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)",
+            backgroundSize: "30px 30px",
+          }}
+        />
+
+        {/* 右侧大号 Logo 装饰（半透明水印效果） */}
+        <div
+          className="absolute right-[-40px] top-1/2 -translate-y-1/2 pointer-events-none hidden md:block"
+          style={{ opacity: 0.06 }}
+        >
+          <svg viewBox="0 0 200 230" width="480" height="552" fill="white">
+            <polygon points="10,63 57,14 83,54 63,77" />
+            <polygon points="190,63 143,14 117,54 137,77" />
+            <polygon points="88,27 100,10 112,27 108,57 92,57" />
+            <polygon points="92,57 108,57 108,77 92,77" />
+            <polygon points="63,77 92,77 92,103 63,103" />
+            <polygon points="108,77 137,77 137,103 108,103" />
+            <polygon points="10,112 62,93 64,116 12,126" />
+            <polygon points="190,112 138,93 136,116 188,126" />
+            <polygon points="63,127 92,127 92,153 63,153" />
+            <polygon points="108,127 137,127 137,153 108,153" />
+            <polygon points="33,166 63,153 73,179 37,183" />
+            <polygon points="167,166 137,153 127,179 163,183" />
+            <polygon points="73,179 127,179 119,206 100,224 81,206" />
+          </svg>
+        </div>
+
+        {/* 文字卡片：底部左侧悬浮（Rothschild 标志性布局） */}
+        <div
+          className="absolute bottom-0 left-0 bg-white px-8 md:px-12 py-8 md:py-10"
+          style={{ maxWidth: "min(520px, 90vw)" }}
+        >
+          <p
+            className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase mb-3 md:mb-4"
+            style={{ color: "var(--ft-text-dim)" }}
+          >
             FirstTouch · Quantitative Sports Analytics
           </p>
-          <h1 className="ft-heading font-semibold leading-tight" style={{ maxWidth: "600px" }}>
-            <span className="block text-2xl md:text-[2.6rem]">Quantifying the Genesis of Decision.</span>
-            <span className="block text-xl md:text-3xl mt-1" style={{ fontStyle: "italic", color: "var(--ft-navy)" }}>
+
+          <h1 className="ft-heading font-semibold leading-tight">
+            <span
+              className="block text-[1.5rem] md:text-[2.1rem]"
+              style={{ color: "var(--ft-navy)" }}
+            >
+              Quantifying the Genesis of Decision.
+            </span>
+            <span
+              className="block text-[1.2rem] md:text-[1.7rem] mt-1"
+              style={{ fontStyle: "italic", color: "var(--ft-navy)" }}
+            >
               量化決斷之始。
             </span>
           </h1>
+
           <p
-            className="mt-5 md:mt-7 text-[13px] md:text-[14px] leading-relaxed font-sans"
-            style={{ color: "var(--ft-text-muted)", maxWidth: "520px" }}
+            className="mt-4 text-[12px] md:text-[13px] leading-relaxed"
+            style={{ color: "var(--ft-text-muted)", maxWidth: "400px" }}
           >
-            足球場上的第一次觸球，即是戰術執行的輸入層（Input Layer）。FirstTouch 透過底層神經網絡，
-            在球權轉換的毫秒間預演決策拓撲，為您錨定每一場對局的隱含期望收益（EV）。
+            足球場上的第一次觸球，即是戰術執行的輸入層（Input Layer）。
+            FirstTouch 透過底層神經網絡，在球權轉換的毫秒間預演決策拓撲，
+            為您錨定每一場對局的隱含期望收益（EV）。
           </p>
+
+          {/* 底部分隔线 + 指示 */}
+          <div
+            className="mt-5 pt-4 flex items-center gap-4"
+            style={{ borderTop: "1px solid var(--ft-divider)" }}
+          >
+            <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
+              FIFA World Cup 2026
+            </span>
+            <span style={{ color: "var(--ft-divider)" }}>·</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
+              {liveCount > 0 ? (
+                <span style={{ color: "var(--ft-red)" }}>● {liveCount} Live Now</span>
+              ) : "Match Analysis Platform"}
+            </span>
+          </div>
         </div>
       </div>
 
