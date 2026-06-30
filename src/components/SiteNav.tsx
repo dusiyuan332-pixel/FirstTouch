@@ -26,30 +26,14 @@ export default function SiteNav({ activeSection }: SiteNavProps) {
       <div className="mx-auto flex h-14 md:h-16 max-w-6xl items-stretch justify-between px-4 md:px-8">
 
         {/* 品牌 */}
-        <Link
-          href="/"
-          className="flex items-center gap-3 no-underline"
-          style={{ color: "var(--ft-navy)" }}
-        >
+        <Link href="/" className="flex items-center no-underline">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/logo-nav.png"
-            alt=""
-            aria-hidden="true"
-            style={{ height: "38px", width: "auto" }}
+            src="/logo-wordmark-clean.png"
+            alt="FirstTouch"
+            style={{ height: "42px", width: "auto" }}
             className="object-contain"
           />
-          <div className="flex flex-col justify-center leading-none">
-            <span
-              className="ft-heading text-[17px] md:text-[19px] font-semibold"
-              style={{ letterSpacing: "0.02em", color: "var(--ft-navy)" }}
-            >
-              FirstTouch
-            </span>
-            <span className="ft-label mt-0.5 hidden sm:block text-[10px]">
-              Quantitative Analytics
-            </span>
-          </div>
         </Link>
 
         {/* 导航 + 用户区 */}
