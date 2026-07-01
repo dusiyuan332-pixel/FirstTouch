@@ -17,17 +17,6 @@ const MENU_SECTIONS = [
     ],
   },
   {
-    id: "tools",
-    label: "量化工具",
-    labelEn: "Quant Models",
-    items: [
-      { label: "泊松预测",     href: "/methodology",              desc: "预期进球 xG 分布建模" },
-      { label: "Kelly 准则",   href: "/methodology#kelly",        desc: "最优仓位管理算法" },
-      { label: "大小球模型",   href: "/methodology#totals",       desc: "Over/Under 隐含概率" },
-      { label: "Edge 分析",    href: "/methodology#edge",         desc: "市场价值差量化框架" },
-    ],
-  },
-  {
     id: "about",
     label: "关于我们",
     labelEn: "About Us",

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import SiteNav from "@/components/SiteNav";
 import Link from "next/link";
 
@@ -24,6 +25,8 @@ function Formula({ eq, desc }: { eq: string; desc: string }) {
 }
 
 export default function MethodologyPage() {
+  // 方法论文档暂时下线，重定向至关于我们页面
+  redirect("/about#methodology");
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
       <SiteNav />

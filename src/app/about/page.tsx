@@ -156,9 +156,9 @@ export default function AboutPage() {
             />
           </div>
 
-          <Link href="/methodology" className="inline-block mt-8 text-[13px] font-semibold no-underline"
+          <Link href="/about#methodology" className="inline-block mt-8 text-[13px] font-semibold no-underline"
             style={{ color: "var(--ft-navy)", borderBottom: "1px solid var(--ft-navy)", paddingBottom: "2px" }}>
-            查看完整方法论文档 →
+            了解更多 →
           </Link>
         </div>
       </section>
