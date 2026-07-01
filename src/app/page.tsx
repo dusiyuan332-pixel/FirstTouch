@@ -2,10 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
 import LeagueTabs from "@/components/LeagueTabs";
+import TournamentCenter from "@/components/TournamentCenter";
 import KickoffCountdown from "@/components/KickoffCountdown";
 import LiveMatchClock from "@/components/LiveMatchClock";
 import LiveRefresher from "@/components/LiveRefresher";
-import { fetchWC2026Matches, fetchTopFiveLeagues, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
+import {
+  fetchWC2026Matches,
+  fetchTopFiveLeagues,
+  fetchWC2026Scorers,
+  computeGroupStandings,
+  getTournamentProgress,
+  getFocusMatchday,
+  type DisplayMatch,
+  type RatingType,
+} from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 
 // ─── 评级元数据（白底配色）────────────────────────────────────────────────────
@@ -263,11 +273,13 @@ function SectionHeading({
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const [allWcMatches, leagueStandings] = await Promise.all([
+  const TODAY = new Date().toISOString().slice(0, 10);
+
+  const [allWcMatches, leagueStandings, scorers] = await Promise.all([
     fetchWC2026Matches(PREDICTIONS).catch(() => []),
     fetchTopFiveLeagues().catch(() => []),
+    fetchWC2026Scorers(5).catch(() => []),
   ]);
-  const now = new Date();
 
   // 优先取直播中，其次取最近即将开赛的（按开赛时间 ASC）
   const hotMatches = allWcMatches
@@ -282,6 +294,10 @@ export default async function HomePage() {
     .slice(0, 2);
 
   const liveCount = allWcMatches.filter((m) => m.status === "live").length;
+  const featuredMatchIds = hotMatches.map((m) => m.id);
+  const groupStandings = computeGroupStandings(allWcMatches);
+  const tournamentProgress = getTournamentProgress(allWcMatches);
+  const focusMatchday = getFocusMatchday(allWcMatches, TODAY);
 
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
@@ -376,12 +392,22 @@ export default async function HomePage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 md:px-8 py-8 md:py-12 space-y-12 md:space-y-16">
 
-        {/* ── 量化精选 ── */}
+        {/* ── 赛事中心（全局纵览，不含预测）── */}
+        <TournamentCenter
+          featuredMatchIds={featuredMatchIds}
+          focusMatchday={focusMatchday}
+          groupStandings={groupStandings}
+          progress={tournamentProgress}
+          scorers={scorers}
+          liveCount={liveCount}
+        />
+
+        {/* ── 量化精选（深度推荐，与赛事中心互补）── */}
         <section>
           <SectionHeading
             label="QUANT PICKS · 量化精选"
             title="近期推荐对局"
-            sub="算法基准筛选 | 按算力预演置信度动态排序"
+            sub="模型深度分析入口 · 含预测信号与置信度评级"
             action={
               <Link
                 href="/worldcup"

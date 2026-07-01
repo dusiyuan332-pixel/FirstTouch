@@ -407,3 +407,145 @@ export function formatDate(dateStr: string): string {
     month: "long", day: "numeric", weekday: "short", timeZone: "UTC",
   });
 }
+
+// ── 赛事中心：从赛果推算小组积分 ─────────────────────────────────────────────
+
+export interface GroupStandingEntry {
+  team: DisplayTeam;
+  played: number;
+  won: number;
+  draw: number;
+  lost: number;
+  gf: number;
+  ga: number;
+  gd: number;
+  points: number;
+}
+
+export interface GroupStandings {
+  group: string;
+  teams: GroupStandingEntry[];
+}
+
+function emptyStanding(team: DisplayTeam): GroupStandingEntry {
+  return { team, played: 0, won: 0, draw: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0 };
+}
+
+/** 根据已完赛的小组赛结果推算积分榜（无需额外 API） */
+export function computeGroupStandings(matches: DisplayMatch[]): GroupStandings[] {
+  const groupTeams = new Map<string, Map<string, GroupStandingEntry>>();
+
+  for (const m of matches) {
+    if (m.stage !== "Group Stage" || !m.group) continue;
+    const g = groupTeams.get(m.group) ?? new Map();
+    if (!g.has(m.homeTeam.code)) g.set(m.homeTeam.code, emptyStanding(m.homeTeam));
+    if (!g.has(m.awayTeam.code)) g.set(m.awayTeam.code, emptyStanding(m.awayTeam));
+    groupTeams.set(m.group, g);
+  }
+
+  for (const m of matches) {
+    if (m.stage !== "Group Stage" || !m.group || m.status !== "finished" || !m.score) continue;
+    const g = groupTeams.get(m.group);
+    if (!g) continue;
+
+    const home = g.get(m.homeTeam.code)!;
+    const away = g.get(m.awayTeam.code)!;
+    const { home: hg, away: ag } = m.score;
+
+    home.played++; away.played++;
+    home.gf += hg; home.ga += ag;
+    away.gf += ag; away.ga += hg;
+
+    if (hg > ag) {
+      home.won++; home.points += 3;
+      away.lost++;
+    } else if (hg < ag) {
+      away.won++; away.points += 3;
+      home.lost++;
+    } else {
+      home.draw++; away.draw++;
+      home.points++; away.points++;
+    }
+    home.gd = home.gf - home.ga;
+    away.gd = away.gf - away.ga;
+  }
+
+  return [...groupTeams.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([group, teamMap]) => ({
+      group,
+      teams: [...teamMap.values()].sort(
+        (a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf,
+      ),
+    }));
+}
+
+export interface TournamentProgress {
+  stageLabel: string;
+  groupFinished: number;
+  groupTotal: number;
+  knockoutFinished: number;
+  knockoutTotal: number;
+  totalFinished: number;
+  totalMatches: number;
+}
+
+export function getTournamentProgress(matches: DisplayMatch[]): TournamentProgress {
+  const group = matches.filter((m) => m.stage === "Group Stage");
+  const knockout = matches.filter((m) => m.stage !== "Group Stage");
+  const groupFinished = group.filter((m) => m.status === "finished").length;
+  const knockoutFinished = knockout.filter((m) => m.status === "finished").length;
+
+  let stageLabel = "小组赛";
+  if (group.length > 0 && groupFinished === group.length && knockout.length > 0) {
+    if (knockoutFinished === knockout.length) stageLabel = "赛事结束";
+    else if (knockout.some((m) => m.stage === "Final")) stageLabel = "决赛阶段";
+    else stageLabel = "淘汰赛";
+  } else if (group.length === 0 && knockout.length > 0) {
+    stageLabel = "淘汰赛";
+  }
+
+  return {
+    stageLabel,
+    groupFinished,
+    groupTotal: group.length,
+    knockoutFinished,
+    knockoutTotal: knockout.length,
+    totalFinished: matches.filter((m) => m.status === "finished").length,
+    totalMatches: matches.length,
+  };
+}
+
+/** 今日赛程；若今日无赛则返回最近下一个比赛日 */
+export function getFocusMatchday(
+  matches: DisplayMatch[],
+  todayUtc: string,
+): { date: string; label: string; isToday: boolean; matches: DisplayMatch[] } {
+  const byDate = groupByDate(
+    matches.filter((m) => m.status === "live" || m.status === "upcoming" || m.status === "finished"),
+  );
+  const dates = getUniqueDates([...byDate.values()].flat());
+
+  const todayList = byDate.get(todayUtc) ?? [];
+  if (todayList.length > 0) {
+    return { date: todayUtc, label: "今日赛程", isToday: true, matches: todayList };
+  }
+
+  const nextDate = dates.find((d) => d >= todayUtc);
+  if (nextDate) {
+    return {
+      date: nextDate,
+      label: "下一比赛日",
+      isToday: false,
+      matches: byDate.get(nextDate) ?? [],
+    };
+  }
+
+  const lastDate = dates[dates.length - 1];
+  return {
+    date: lastDate ?? todayUtc,
+    label: "最近比赛日",
+    isToday: false,
+    matches: lastDate ? (byDate.get(lastDate) ?? []) : [],
+  };
+}
