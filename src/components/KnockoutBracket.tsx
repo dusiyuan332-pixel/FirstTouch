@@ -1,28 +1,25 @@
 /**
- * KnockoutBracket — FotMob 比例：左右半区 + 中心区，紧凑无横滚
+ * KnockoutBracket — 全宽左右半区晋级树（贴边、可读卡片）
  */
 
 import Link from "next/link";
 import Image from "next/image";
-import BracketFit from "@/components/BracketFit";
 import type { DisplayMatch, DisplayTeam, KnockoutRound } from "@/lib/footballDataApi";
 import { getMatchWinner } from "@/lib/footballDataApi";
 
-// FotMob 风格紧凑尺寸（设计稿 720px 宽）
-const MATCH_H = 26;
-const ROW_H = 26;
-const COL_W = 68;
-const CONN_W = 8;
-const CENTER_W = 76;
-const HEADER_H = 28;
+const MATCH_H = 36;
+const ROW_H = 30;
+const CONN_W = 10;
+const CENTER_W = 88;
+const TEAM_ROW_H = 17;
 
 const CARD = {
   border: "1px solid var(--ft-border)",
   backgroundColor: "var(--ft-bg-card)",
-  borderRadius: "4px",
+  borderRadius: "5px",
 } as const;
 
-// ─── 紧凑比赛卡（FotMob：双行队名 + 中间日期/比分）────────────────────────
+// ─── 比赛卡 ─────────────────────────────────────────────────────────────────
 
 function TeamRow({
   team, score, isWinner, isLoser,
@@ -31,23 +28,29 @@ function TeamRow({
 }) {
   return (
     <div
-      className="flex items-center gap-0.5 px-1 h-[13px] min-w-0"
-      style={{ backgroundColor: isWinner ? "rgba(0,92,56,0.07)" : undefined, opacity: isLoser ? 0.4 : 1 }}
+      className="flex items-center gap-1 px-1.5 min-w-0"
+      style={{
+        height: TEAM_ROW_H,
+        backgroundColor: isWinner ? "rgba(0,92,56,0.07)" : undefined,
+        opacity: isLoser ? 0.42 : 1,
+      }}
     >
-      {team.crest ? (
-        <div className="relative h-3 w-3 shrink-0">
-          <Image src={team.crest} alt="" fill className="object-contain" sizes="12px" unoptimized />
+      {team.crest && (
+        <div className="relative h-4 w-4 shrink-0">
+          <Image src={team.crest} alt="" fill className="object-contain" sizes="16px" unoptimized />
         </div>
-      ) : null}
+      )}
       <span
-        className="flex-1 font-mono text-[9px] truncate leading-none"
+        className="flex-1 font-mono text-[11px] truncate leading-tight"
         style={{ color: isWinner ? "#005c38" : "var(--ft-navy)", fontWeight: isWinner ? 700 : 500 }}
       >
         {team.code}
       </span>
       {score !== undefined && (
-        <span className="font-mono text-[9px] font-bold tabular-nums leading-none w-3 text-right shrink-0"
-          style={{ color: isWinner ? "#005c38" : "var(--ft-navy)" }}>
+        <span
+          className="font-mono text-[11px] font-bold tabular-nums w-4 text-right shrink-0"
+          style={{ color: isWinner ? "#005c38" : "var(--ft-navy)" }}
+        >
           {score}
         </span>
       )}
@@ -71,20 +74,20 @@ function BracketMatchCard({ match, tag }: { match: DisplayMatch; tag?: string })
   return (
     <Link
       href={`/worldcup/match/${match.id}`}
-      className="block no-underline relative"
+      className="block w-full no-underline relative"
       style={{
         ...CARD,
         height: MATCH_H,
         borderLeft: isLive ? "2px solid var(--ft-red)" : undefined,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
       }}
     >
       {tag && (
         <div
-          className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-1 py-px whitespace-nowrap"
-          style={{ backgroundColor: tag.includes("FINAL") && !tag.includes("BRONZE") ? "#f5c518" : "#93c5fd", borderRadius: 2 }}
+          className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 px-1.5 py-0.5 whitespace-nowrap rounded-sm"
+          style={{ backgroundColor: tag.includes("BRONZE") ? "#93c5fd" : "#f5c518" }}
         >
-          <span className="font-mono text-[6px] font-bold uppercase" style={{ color: "#1e293b" }}>
+          <span className="font-mono text-[7px] font-bold uppercase" style={{ color: "#1e293b" }}>
             {tag.includes("BRONZE") ? "3RD" : "FINAL"}
           </span>
         </div>
@@ -97,18 +100,20 @@ function BracketMatchCard({ match, tag }: { match: DisplayMatch; tag?: string })
 
       {isScheduled && (
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none px-0.5"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none px-1 rounded-sm"
           style={{ backgroundColor: "var(--ft-bg-card)" }}
         >
-          <span className="font-mono text-[7px] leading-none whitespace-nowrap" style={{ color: "var(--ft-text-dim)" }}>
+          <span className="font-mono text-[9px] leading-none whitespace-nowrap" style={{ color: "var(--ft-text-dim)" }}>
             {formatShortDate(match.date)}
           </span>
         </div>
       )}
       {isLive && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none px-0.5"
-          style={{ backgroundColor: "var(--ft-bg-card)" }}>
-          <span className="font-mono text-[6px] font-bold animate-pulse" style={{ color: "var(--ft-red)" }}>LIVE</span>
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none px-1"
+          style={{ backgroundColor: "var(--ft-bg-card)" }}
+        >
+          <span className="font-mono text-[8px] font-bold animate-pulse" style={{ color: "var(--ft-red)" }}>LIVE</span>
         </div>
       )}
     </Link>
@@ -162,11 +167,15 @@ function Connector({ matchCount, roundIndex, treeH, flip }: {
 function RoundColumn({ matches, roundIndex, treeH }: {
   matches: DisplayMatch[]; roundIndex: number; treeH: number;
 }) {
-  if (matches.length === 0) return <div style={{ width: COL_W }} />;
+  if (matches.length === 0) return <div className="flex-1 min-w-0" />;
   return (
-    <div className="relative shrink-0" style={{ width: COL_W, height: treeH }}>
+    <div className="relative flex-1 min-w-0" style={{ height: treeH }}>
       {matches.map((m, i) => (
-        <div key={m.id} className="absolute left-0 right-0" style={{ top: matchTop(roundIndex, i), height: MATCH_H }}>
+        <div
+          key={m.id}
+          className="absolute left-0 right-0"
+          style={{ top: matchTop(roundIndex, i), height: MATCH_H }}
+        >
           <BracketMatchCard match={m} />
         </div>
       ))}
@@ -179,14 +188,12 @@ function BracketHalf({ side, wingRounds, treeH }: {
   wingRounds: { matches: DisplayMatch[]; roundIndex: number }[];
   treeH: number;
 }) {
-  const cols = side === "left"
-    ? wingRounds
-    : [...wingRounds].reverse();
+  const cols = side === "left" ? wingRounds : [...wingRounds].reverse();
 
   return (
-    <div className="flex shrink-0">
+    <div className="flex flex-1 min-w-0 items-start">
       {cols.map((col, colIdx) => (
-        <div key={`${side}-${col.roundIndex}`} className="flex shrink-0">
+        <div key={`${side}-${col.roundIndex}`} className="flex flex-1 min-w-0 items-start">
           {side === "right" && colIdx > 0 && (
             <Connector matchCount={col.matches.length} roundIndex={col.roundIndex} treeH={treeH} flip />
           )}
@@ -209,35 +216,34 @@ function CenterPodium({ finalMatch, thirdPlace, treeH }: {
   const midY = treeH / 2;
 
   return (
-    <div className="relative shrink-0" style={{ width: CENTER_W, height: treeH }}>
-      {/* 冠军 */}
-      <div className="absolute left-0 right-0 text-center" style={{ top: Math.max(0, midY - 90) }}>
-        <div className="text-sm leading-none mb-0.5">🏆</div>
-        <p className="font-mono text-[6px] font-bold uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
+    <div className="relative shrink-0 px-1" style={{ width: CENTER_W, height: treeH }}>
+      <div className="absolute left-0 right-0 text-center" style={{ top: Math.max(4, midY - 100) }}>
+        <div className="text-base leading-none mb-0.5">🏆</div>
+        <p className="font-mono text-[7px] font-bold uppercase tracking-widest" style={{ color: "var(--ft-text-dim)" }}>
           CHAMPION
         </p>
         {champion ? (
-          <div className="flex items-center justify-center gap-0.5 mt-0.5">
+          <div className="flex items-center justify-center gap-1 mt-1">
             {champion.crest && (
-              <div className="relative h-3.5 w-3.5">
-                <Image src={champion.crest} alt="" fill className="object-contain" sizes="14px" unoptimized />
+              <div className="relative h-4 w-4">
+                <Image src={champion.crest} alt="" fill className="object-contain" sizes="16px" unoptimized />
               </div>
             )}
-            <span className="font-mono text-[8px] font-bold" style={{ color: "#005c38" }}>{champion.code}</span>
+            <span className="font-mono text-[10px] font-bold" style={{ color: "#005c38" }}>{champion.code}</span>
           </div>
         ) : (
-          <span className="font-mono text-[8px]" style={{ color: "var(--ft-text-dim)" }}>—</span>
+          <span className="font-mono text-[10px]" style={{ color: "var(--ft-text-dim)" }}>—</span>
         )}
       </div>
 
       {finalMatch && (
-        <div className="absolute left-0 right-0" style={{ top: midY - 38 }}>
+        <div className="absolute left-0 right-0" style={{ top: midY - 44 }}>
           <BracketMatchCard match={finalMatch} tag="FINAL" />
         </div>
       )}
 
       {thirdPlace && (
-        <div className="absolute left-0 right-0" style={{ top: midY + 12 }}>
+        <div className="absolute left-0 right-0" style={{ top: midY + 14 }}>
           <BracketMatchCard match={thirdPlace} tag="BRONZE" />
         </div>
       )}
@@ -271,11 +277,6 @@ export default function KnockoutBracket({ rounds, thirdPlace }: KnockoutBracketP
     .map((r, i) => ({ matches: splitHalf(r.matches).right, roundIndex: i }))
     .filter((c) => c.matches.length > 0);
 
-  const roundCount = Math.max(leftWing.length, rightWing.length);
-  const designWidth =
-    roundCount * 2 * (COL_W + CONN_W) + CENTER_W;
-  const designHeight = treeH + HEADER_H;
-
   return (
     <section style={{ ...CARD, borderRadius: 0 }}>
       <div
@@ -288,16 +289,13 @@ export default function KnockoutBracket({ rounds, thirdPlace }: KnockoutBracketP
         </span>
       </div>
 
-      <div className="px-2 md:px-3 py-3">
-        <BracketFit designWidth={designWidth} designHeight={designHeight}>
-          <div style={{ width: designWidth, height: designHeight, paddingTop: HEADER_H }}>
-            <div className="flex items-start justify-center">
-              <BracketHalf side="left" wingRounds={leftWing} treeH={treeH} />
-              <CenterPodium finalMatch={finalMatch} thirdPlace={thirdPlace ?? null} treeH={treeH} />
-              <BracketHalf side="right" wingRounds={rightWing} treeH={treeH} />
-            </div>
-          </div>
-        </BracketFit>
+      {/* 全宽贴边，无横向 padding */}
+      <div className="w-full px-1 py-4">
+        <div className="flex w-full items-start">
+          <BracketHalf side="left" wingRounds={leftWing} treeH={treeH} />
+          <CenterPodium finalMatch={finalMatch} thirdPlace={thirdPlace ?? null} treeH={treeH} />
+          <BracketHalf side="right" wingRounds={rightWing} treeH={treeH} />
+        </div>
       </div>
     </section>
   );
