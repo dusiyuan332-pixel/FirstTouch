@@ -598,3 +598,71 @@ export function getMatchWinner(match: DisplayMatch): DisplayTeam | null {
   if (away > home) return match.awayTeam;
   return null;
 }
+
+/** 占位球队（API 尚未填入真实对阵） */
+export const TBD_TEAM: DisplayTeam = {
+  id: -1,
+  name: "TBD",
+  nameZh: "待定",
+  crest: "",
+  code: "TBD",
+};
+
+export function isPlaceholderTeam(team: DisplayTeam): boolean {
+  const code = (team.code || "").trim().toUpperCase();
+  const name = (team.name || "").toLowerCase();
+  if (!code || code === "TBD" || code === "—" || code === "-" || code === "N/A") return true;
+  if (name.includes("winner") || name.includes("待定") || name.includes("tbd")) return true;
+  return false;
+}
+
+function fillTeamSlot(current: DisplayTeam, winner: DisplayTeam | null): DisplayTeam {
+  if (!winner) return current;
+  if (isPlaceholderTeam(current)) return winner;
+  return current;
+}
+
+/**
+ * 按对阵树将已完赛场的胜者填入下一轮空位（半区内）
+ * 配对规则：match[2j] 与 match[2j+1] 的胜者 → 下一轮 match[j]
+ */
+export function propagateWinnersInWing(roundMatches: DisplayMatch[][]): DisplayMatch[][] {
+  if (roundMatches.length <= 1) return roundMatches.map((r) => r.map((m) => ({ ...m })));
+
+  const wing = roundMatches.map((round) => round.map((m) => ({ ...m })));
+
+  for (let r = 0; r < wing.length - 1; r++) {
+    const feeders = wing[r];
+    const next = wing[r + 1];
+
+    for (let j = 0; j < next.length; j++) {
+      const w0 = feeders[j * 2] ? getMatchWinner(feeders[j * 2]) : null;
+      const w1 = feeders[j * 2 + 1] ? getMatchWinner(feeders[j * 2 + 1]) : null;
+      const m = next[j];
+
+      next[j] = {
+        ...m,
+        homeTeam: fillTeamSlot(m.homeTeam, w0),
+        awayTeam: fillTeamSlot(m.awayTeam, w1),
+      };
+    }
+  }
+
+  return wing;
+}
+
+/** 决赛：左半区胜者 vs 右半区胜者 */
+export function propagateFinalMatch(
+  final: DisplayMatch | null,
+  leftInner: DisplayMatch | null,
+  rightInner: DisplayMatch | null,
+): DisplayMatch | null {
+  if (!final) return null;
+  const lw = leftInner ? getMatchWinner(leftInner) : null;
+  const rw = rightInner ? getMatchWinner(rightInner) : null;
+  return {
+    ...final,
+    homeTeam: fillTeamSlot(final.homeTeam, lw),
+    awayTeam: fillTeamSlot(final.awayTeam, rw),
+  };
+}

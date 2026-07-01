@@ -5,7 +5,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { DisplayMatch, DisplayTeam, KnockoutRound } from "@/lib/footballDataApi";
-import { getMatchWinner } from "@/lib/footballDataApi";
+import {
+  getMatchWinner,
+  isPlaceholderTeam,
+  propagateWinnersInWing,
+  propagateFinalMatch,
+  TBD_TEAM,
+} from "@/lib/footballDataApi";
 
 const MATCH_H = 36;
 const ROW_H = 30;
@@ -42,7 +48,13 @@ function TeamRow({
       )}
       <span
         className="flex-1 font-mono text-[11px] truncate leading-tight"
-        style={{ color: isWinner ? "#005c38" : "var(--ft-navy)", fontWeight: isWinner ? 700 : 500 }}
+        style={{
+          color: team.code === "TBD"
+            ? "var(--ft-text-dim)"
+            : isWinner ? "#005c38" : "var(--ft-navy)",
+          fontWeight: isWinner ? 700 : 500,
+          fontStyle: team.code === "TBD" ? "italic" : undefined,
+        }}
       >
         {team.code}
       </span>
@@ -68,8 +80,12 @@ function BracketMatchCard({ match, tag }: { match: DisplayMatch; tag?: string })
   const isFinished = match.status === "finished";
   const isScheduled = !isFinished && !isLive;
   const winner = getMatchWinner(match);
+
+  const homeTeam = isPlaceholderTeam(match.homeTeam) ? TBD_TEAM : match.homeTeam;
+  const awayTeam = isPlaceholderTeam(match.awayTeam) ? TBD_TEAM : match.awayTeam;
   const homeWins = winner?.code === match.homeTeam.code;
   const awayWins = winner?.code === match.awayTeam.code;
+  const bothTbd = isPlaceholderTeam(match.homeTeam) && isPlaceholderTeam(match.awayTeam);
 
   return (
     <Link
@@ -92,18 +108,26 @@ function BracketMatchCard({ match, tag }: { match: DisplayMatch; tag?: string })
           </span>
         </div>
       )}
-      <TeamRow team={match.homeTeam} score={match.score?.home}
+      <TeamRow team={homeTeam} score={match.score?.home}
         isWinner={homeWins} isLoser={isFinished && awayWins} />
       <div style={{ borderTop: "1px solid var(--ft-divider)" }} />
-      <TeamRow team={match.awayTeam} score={match.score?.away}
+      <TeamRow team={awayTeam} score={match.score?.away}
         isWinner={awayWins} isLoser={isFinished && homeWins} />
 
-      {isScheduled && (
+      {isScheduled && bothTbd && (
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none px-1 rounded-sm"
           style={{ backgroundColor: "var(--ft-bg-card)" }}
         >
           <span className="font-mono text-[9px] leading-none whitespace-nowrap" style={{ color: "var(--ft-text-dim)" }}>
+            {formatShortDate(match.date)}
+          </span>
+        </div>
+      )}
+      {isScheduled && !bothTbd && (
+        <div className="absolute bottom-0 left-0 right-0 text-center py-px pointer-events-none"
+          style={{ backgroundColor: "rgba(255,255,255,0.9)", borderTop: "1px solid var(--ft-divider)" }}>
+          <span className="font-mono text-[7px]" style={{ color: "var(--ft-text-dim)" }}>
             {formatShortDate(match.date)}
           </span>
         </div>
@@ -269,13 +293,30 @@ export default function KnockoutBracket({ rounds, thirdPlace }: KnockoutBracketP
     : 1;
   const treeH = calcTreeHeight(outerCount);
 
-  const leftWing = wingRoundsMeta
+  const leftWingRaw = wingRoundsMeta
     .map((r, i) => ({ matches: splitHalf(r.matches).left, roundIndex: i }))
     .filter((c) => c.matches.length > 0);
 
-  const rightWing = wingRoundsMeta
+  const rightWingRaw = wingRoundsMeta
     .map((r, i) => ({ matches: splitHalf(r.matches).right, roundIndex: i }))
     .filter((c) => c.matches.length > 0);
+
+  const leftPropagated = propagateWinnersInWing(leftWingRaw.map((c) => c.matches));
+  const rightPropagated = propagateWinnersInWing(rightWingRaw.map((c) => c.matches));
+
+  const leftWing = leftWingRaw.map((c, i) => ({
+    roundIndex: c.roundIndex,
+    matches: leftPropagated[i] ?? c.matches,
+  }));
+
+  const rightWing = rightWingRaw.map((c, i) => ({
+    roundIndex: c.roundIndex,
+    matches: rightPropagated[i] ?? c.matches,
+  }));
+
+  const leftInner = leftPropagated[leftPropagated.length - 1]?.[0] ?? null;
+  const rightInner = rightPropagated[rightPropagated.length - 1]?.[0] ?? null;
+  const enrichedFinal = propagateFinalMatch(finalMatch, leftInner, rightInner);
 
   return (
     <section style={{ ...CARD, borderRadius: 0 }}>
@@ -293,7 +334,7 @@ export default function KnockoutBracket({ rounds, thirdPlace }: KnockoutBracketP
       <div className="w-full px-1 py-4">
         <div className="flex w-full items-start">
           <BracketHalf side="left" wingRounds={leftWing} treeH={treeH} />
-          <CenterPodium finalMatch={finalMatch} thirdPlace={thirdPlace ?? null} treeH={treeH} />
+          <CenterPodium finalMatch={enrichedFinal} thirdPlace={thirdPlace ?? null} treeH={treeH} />
           <BracketHalf side="right" wingRounds={rightWing} treeH={treeH} />
         </div>
       </div>
