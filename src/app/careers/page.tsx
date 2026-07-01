@@ -28,9 +28,9 @@ function JobCard({
       </div>
       {/* 描述 + 技能 */}
       <div className="px-5 py-4">
-        <p className="text-[13px] leading-relaxed mb-4" style={{ color: "var(--ft-text-muted)" }}>
-          {desc}
-        </p>
+      <p className="text-[13px] leading-relaxed mb-4" style={{ color: "#334155" }}>
+        {desc}
+      </p>
         <div className="flex flex-wrap gap-2">
           {skills.map((s) => (
             <span key={s}
@@ -62,7 +62,7 @@ function ValueCard({ icon, title, desc }: { icon: string; title: string; desc: s
     <div className="px-5 py-5" style={{ border: "1px solid var(--ft-border)" }}>
       <div className="text-2xl mb-3">{icon}</div>
       <h3 className="text-[14px] font-bold mb-2" style={{ color: "var(--ft-navy)" }}>{title}</h3>
-      <p className="text-[13px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>{desc}</p>
+      <p className="text-[13px] leading-relaxed" style={{ color: "#334155" }}>{desc}</p>
     </div>
   );
 }
@@ -144,7 +144,7 @@ export default function CareersPage() {
             构建下一代<br />足球分析平台
           </h1>
           <p className="text-[16px] leading-relaxed max-w-2xl mb-8"
-            style={{ color: "rgba(255,255,255,0.65)" }}>
+            style={{ color: "rgba(255,255,255,0.88)" }}>
             我们正在寻找对数据、足球、以及不确定性充满热情的人才。
             无论你是量化分析师、工程师还是设计师，只要你相信数据可以让足球更有趣，我们很想认识你。
           </p>
@@ -209,7 +209,7 @@ export default function CareersPage() {
               <div key={w.title} className="px-5 py-5"
                 style={{ border: "1px solid var(--ft-border)", backgroundColor: "var(--ft-bg)" }}>
                 <h3 className="text-[14px] font-bold mb-2" style={{ color: "var(--ft-navy)" }}>{w.title}</h3>
-                <p className="text-[13px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>{w.desc}</p>
+                <p className="text-[13px] leading-relaxed" style={{ color: "#334155" }}>{w.desc}</p>
               </div>
             ))}
           </div>
@@ -220,7 +220,7 @@ export default function CareersPage() {
       <section style={{ backgroundColor: "#001830", color: "#fff" }}>
         <div className="mx-auto max-w-5xl px-4 md:px-8 py-16 text-center">
           <h2 className="text-2xl font-bold mb-4">没有合适的职位？</h2>
-          <p className="text-[14px] mb-6" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <p className="text-[14px] mb-6" style={{ color: "rgba(255,255,255,0.88)" }}>
             如果你认为自己能为 FirstTouch 带来价值，随时发邮件给我们。
           </p>
           <a

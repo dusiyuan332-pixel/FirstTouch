@@ -28,7 +28,7 @@ function ModelCard({
           {tag}
         </span>
       </div>
-      <p className="text-[13px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+      <p className="text-[13px] leading-relaxed" style={{ color: "#334155" }}>
         {desc}
       </p>
     </div>
@@ -43,7 +43,7 @@ function DataSourceRow({ name, type, detail }: { name: string; type: string; det
       style={{ borderBottom: "1px solid var(--ft-divider)" }}>
       <div>
         <p className="text-[13px] font-semibold" style={{ color: "var(--ft-navy)" }}>{name}</p>
-        <p className="ft-label text-[11px] mt-0.5">{detail}</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "#64748b" }}>{detail}</p>
       </div>
       <span className="font-mono text-[10px] px-2 py-0.5"
         style={{ backgroundColor: "var(--ft-green-bg)", color: "var(--ft-green)", border: "1px solid rgba(0,92,56,0.2)" }}>
@@ -64,17 +64,17 @@ export default function AboutPage() {
       <section style={{ backgroundColor: "#001830", color: "#fff" }}>
         <div className="mx-auto max-w-5xl px-4 md:px-8 py-20 md:py-28">
           <p className="font-mono text-[10px] tracking-widest uppercase mb-4"
-            style={{ color: "rgba(201,169,110,0.9)" }}>
+            style={{ color: "#c9a96e" }}>
             About FirstTouch
           </p>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-6"
-            style={{ letterSpacing: "-0.02em" }}>
-            用量化思维<br />重新定义足球分析
+            style={{ letterSpacing: "-0.02em", color: "#ffffff" }}>
+            用量化思維<br />重新定義足球分析
           </h1>
           <p className="text-[16px] leading-relaxed max-w-2xl"
-            style={{ color: "rgba(255,255,255,0.65)" }}>
-            FirstTouch 是一个面向严肃球迷与量化研究者的足球数据平台。
-            我们相信，足球的美与复杂性可以用严谨的概率论和博弈论来更好地理解。
+            style={{ color: "rgba(255,255,255,0.88)" }}>
+            FirstTouch 是一個面向嚴肅球迷與量化研究者的足球數據平台。
+            我們相信，足球的美與複雜性可以用嚴謹的概率論和博弈論來更好地理解。
           </p>
         </div>
       </section>
@@ -87,7 +87,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold mb-5" style={{ color: "var(--ft-navy)" }}>
               当足球遇上金融建模
             </h2>
-            <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+            <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "#334155" }}>
               <p>
                 FirstTouch 诞生于一个简单的问题：如果把投资银行的量化思维应用于足球预测，会得出什么结论？
               </p>
@@ -113,7 +113,7 @@ export default function AboutPage() {
                 </span>
                 <div>
                   <p className="text-[14px] font-semibold" style={{ color: "var(--ft-navy)" }}>{s.label}</p>
-                  <p className="ft-label text-[11px] mt-0.5">{s.sub}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "#64748b" }}>{s.sub}</p>
                 </div>
               </div>
             ))}
@@ -194,7 +194,7 @@ export default function AboutPage() {
           </p>
           <h2 className="text-xl font-bold mb-5">风险提示与使用条款</h2>
           <div className="space-y-3 text-[13px] leading-relaxed max-w-3xl"
-            style={{ color: "rgba(255,255,255,0.65)" }}>
+            style={{ color: "rgba(255,255,255,0.88)" }}>
             <p>
               FirstTouch 提供的所有分析内容（包括胜率预测、Edge 分析、Kelly 仓位建议）
               <strong style={{ color: "#fff" }}>仅供学术研究与数据探索参考，不构成任何形式的投注或投资建议。</strong>
@@ -207,7 +207,7 @@ export default function AboutPage() {
               请在您所在地区法律允许的范围内使用本网站的信息。
               本网站不对任何因使用或依赖本网站信息而导致的损失承担责任。
             </p>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", marginTop: 12 }}>
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "11px", marginTop: 12 }}>
               Data providers: football-data.org · api-sports.io · the-odds-api.com · wttr.in<br />
               © 2026 FirstTouch Analytics. All rights reserved.
             </p>

@@ -38,7 +38,7 @@ export default function MethodologyPage() {
           <h1 className="text-3xl md:text-4xl font-black mb-4" style={{ letterSpacing: "-0.02em" }}>
             量化模型技术文档
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}>
+          <p style={{ color: "rgba(255,255,255,0.88)", fontSize: "14px" }}>
             FirstTouch 分析引擎的数学基础与实现逻辑
           </p>
         </div>
@@ -47,7 +47,7 @@ export default function MethodologyPage() {
       <main className="mx-auto w-full max-w-4xl px-4 md:px-8 py-8">
 
         <Section id="poisson" title="泊松预测模型" titleEn="POISSON DISTRIBUTION MODEL">
-          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "#334155" }}>
             <p>
               足球比赛中的进球数可以近似用泊松分布建模。给定球队的历史攻防数据，
               我们可以估算出每队在一场比赛中的预期进球数（xG），进而推演所有可能比分的概率分布。
@@ -64,7 +64,7 @@ export default function MethodologyPage() {
         </Section>
 
         <Section id="edge" title="Edge 市场价值差分析" titleEn="EDGE ANALYSIS">
-          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "#334155" }}>
             <p>
               Edge 是我们核心的量化指标，衡量模型对某个结果的概率估计与市场赔率隐含概率之间的差距。
             </p>
@@ -80,7 +80,7 @@ export default function MethodologyPage() {
         </Section>
 
         <Section id="kelly" title="Kelly 准则" titleEn="KELLY CRITERION">
-          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "#334155" }}>
             <p>
               Kelly 准则给出在已知胜率和赔率的情况下，最大化对数期望收益（即长期增长率）的最优下注比例。
             </p>
@@ -96,7 +96,7 @@ export default function MethodologyPage() {
         </Section>
 
         <Section id="totals" title="大小球泊松边际" titleEn="OVER/UNDER POISSON MODEL">
-          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "var(--ft-text-muted)" }}>
+          <div className="space-y-4 text-[14px] leading-relaxed" style={{ color: "#334155" }}>
             <p>
               总进球数 T = 主队进球 + 客队进球。由于两队进球相互独立，T 服从参数为
               λ_total = λ_home + λ_away 的泊松分布。
