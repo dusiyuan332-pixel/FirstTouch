@@ -346,6 +346,9 @@ function PoissonResult({
   );
 }
 
+// WC2026 主办国享有本土主场加成
+const HOST_NATIONS = new Set(["USA", "MEX", "CAN"]);
+
 // ── 异步 fetcher ──────────────────────────────────────────────────────────────
 
 async function PoissonFetcher({ match }: { match: DisplayMatch }) {
@@ -353,6 +356,9 @@ async function PoissonFetcher({ match }: { match: DisplayMatch }) {
   const awayCode = match.awayTeam.code ?? "";
   const { rating: homeRating, found: homeFound } = getRating(homeCode);
   const { rating: awayRating,  found: awayFound  } = getRating(awayCode);
+
+  // 主办国主场加成：美国/墨西哥/加拿大在 WC2026 享有真实主场效应
+  const homeAdvantage = HOST_NATIONS.has(homeCode.toUpperCase()) ? 1.18 : 1.0;
 
   let result: PoissonPredictResponse | null = null;
   let error: string | null = null;
@@ -370,7 +376,7 @@ async function PoissonFetcher({ match }: { match: DisplayMatch }) {
         defense_rating: awayRating.defense,
       },
       league_avg_goals: 1.1,
-      home_advantage:   1.0,
+      home_advantage:   homeAdvantage,
     });
   } catch (e) {
     error = e instanceof Error ? e.message : "未知错误";

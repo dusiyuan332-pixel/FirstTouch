@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import SiteNav from "@/components/SiteNav";
 import { fetchMatchById, type DisplayMatch, type RatingType } from "@/lib/footballDataApi";
 import { PREDICTIONS, DETAILED_ANALYSIS, type DetailedAnalysis } from "@/data/wc2026";
+import { fetchMatchOdds } from "@/lib/oddsApi";
 import { PoissonPanel } from "@/components/PoissonPanel";
 import OddsPanel from "@/components/OddsPanel";
 import H2HPanel from "@/components/H2HPanel";
@@ -284,27 +285,111 @@ function ExecutiveSummary({ match, detail }: { match: DisplayMatch; detail: Deta
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 市场价值差分析
+// 市场价值差分析（实时赔率 → 自动替换硬编码数据）
 // ══════════════════════════════════════════════════════════════════════════════
 
-function EdgeAnalysis({ match, detail }: { match: DisplayMatch; detail: DetailedAnalysis }) {
+async function EdgeAnalysis({
+  match,
+  detail,
+}: {
+  match: DisplayMatch;
+  detail: DetailedAnalysis | null;
+}) {
   const pred = match.prediction!;
-  const rows = [
-    { label: "主队胜", model: pred.homeWin, market: detail.marketHomeWin },
-    { label: "平 局", model: pred.draw,    market: detail.marketDraw },
-    { label: "客队胜", model: pred.awayWin, market: detail.marketAwayWin },
+
+  // 拉取实时盘口（Next.js fetch 去重 —— 与 OddsPanel 共享同一个请求）
+  const liveOdds = await fetchMatchOdds(
+    match.homeTeam.name,
+    match.awayTeam.name,
+  ).catch(() => null);
+
+  // 推导市场概率：优先实时数据，其次静态数据
+  let marketHome: number | null = null;
+  let marketDraw: number | null = null;
+  let marketAway: number | null = null;
+  let isLiveData = false;
+  let bookmakerCount = 0;
+
+  if (liveOdds?.consensus) {
+    const c = liveOdds.consensus;
+    // 去除庄家超额（overround），归一化后才与模型概率可比
+    const rawTotal = c.homeImplied + c.drawImplied + c.awayImplied;
+    marketHome  = Math.round((c.homeImplied  / rawTotal) * 100);
+    marketDraw  = Math.round((c.drawImplied  / rawTotal) * 100);
+    marketAway  = Math.round((c.awayImplied  / rawTotal) * 100);
+    isLiveData  = true;
+    bookmakerCount = liveOdds.bookmakers.length;
+  } else if (detail) {
+    marketHome = detail.marketHomeWin;
+    marketDraw = detail.marketDraw;
+    marketAway = detail.marketAwayWin;
+  }
+
+  // 若两种数据都没有 → 仅展示模型概率柱
+  if (marketHome === null) {
+    return (
+      <div style={CARD}>
+        <div className="flex items-center justify-between px-5 py-3" style={HEADER}>
+          <span className="ft-label">Model Probability · 模型预测概率</span>
+          <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>
+            Edge 分析将在赔率上线后自动启用
+          </span>
+        </div>
+        <div className="px-5 py-5 space-y-4">
+          <div className="flex h-1.5 overflow-hidden" style={{ backgroundColor: "var(--ft-bg-panel)" }}>
+            <div style={{ width: `${pred.homeWin}%`, backgroundColor: C_HOME, transition: "width 0.6s" }} />
+            <div style={{ width: `${pred.draw}%`,    backgroundColor: "var(--ft-text-dim)" }} />
+            <div style={{ width: `${pred.awayWin}%`, backgroundColor: C_AWAY, transition: "width 0.6s" }} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "主队胜", value: pred.homeWin, color: C_HOME },
+              { label: "平 局", value: pred.draw,    color: "var(--ft-text-dim)" },
+              { label: "客队胜", value: pred.awayWin, color: C_AWAY },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="py-4 text-center" style={PANEL}>
+                <p className="font-mono text-2xl font-black tabular-nums" style={{ color }}>{value}%</p>
+                <p className="ft-label mt-1">{label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="ft-label text-center" style={{ color: "var(--ft-text-dim)" }}>
+            市场赔率通常在赛前 24–48 小时开放 · 由 The Odds API 提供
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const rows: { label: string; model: number; market: number }[] = [
+    { label: "主队胜", model: pred.homeWin, market: marketHome },
+    { label: "平 局", model: pred.draw,    market: marketDraw! },
+    { label: "客队胜", model: pred.awayWin, market: marketAway! },
   ];
 
   return (
     <div style={CARD}>
-      <div className="px-5 py-3" style={HEADER}>
+      <div className="flex items-center justify-between flex-wrap gap-2 px-5 py-3" style={HEADER}>
         <span className="ft-label">Probability · Edge Analysis · 市场价值差</span>
+        {isLiveData ? (
+          <div className="flex items-center gap-2">
+            <span className="ft-label">{bookmakerCount} 家博彩 · 归一化隐含概率</span>
+            <span
+              className="font-mono text-[9px] px-2 py-0.5 font-bold uppercase"
+              style={{ backgroundColor: "rgba(0,92,56,0.08)", color: C_GREEN, border: "1px solid rgba(0,92,56,0.2)" }}
+            >
+              LIVE
+            </span>
+          </div>
+        ) : (
+          <span className="ft-label" style={{ color: "var(--ft-text-dim)" }}>静态数据 · 赔率上线后自动切换</span>
+        )}
       </div>
       <div className="px-5 py-5 space-y-4">
         {/* 概率条 */}
         <div className="flex h-1.5 overflow-hidden" style={{ backgroundColor: "var(--ft-bg-panel)" }}>
           <div style={{ width: `${pred.homeWin}%`, backgroundColor: C_HOME, transition: "width 0.6s" }} />
-          <div style={{ width: `${pred.draw}%`, backgroundColor: "var(--ft-text-dim)" }} />
+          <div style={{ width: `${pred.draw}%`,    backgroundColor: "var(--ft-text-dim)" }} />
           <div style={{ width: `${pred.awayWin}%`, backgroundColor: C_AWAY, transition: "width 0.6s" }} />
         </div>
 
@@ -336,7 +421,12 @@ function EdgeAnalysis({ match, detail }: { match: DisplayMatch; detail: Detailed
           </tbody>
         </table>
 
-        <p className="ft-label">价值差 &gt; +3% 视为正向边际。模型概率基于泊松回归 + 历史赔率校正。</p>
+        <p className="ft-label">
+          价值差 &gt; +3% 视为正向边际 ·{" "}
+          {isLiveData
+            ? "市场隐含概率已去除庄家超额（overround），与模型概率直接可比"
+            : "模型概率基于泊松回归 + 历史赔率校正"}
+        </p>
       </div>
     </div>
   );
@@ -687,8 +777,8 @@ export default async function MatchAnalysisPage({
         {/* 2. 执行摘要 */}
         {match.prediction && <ExecutiveSummary match={match} detail={detail} />}
 
-        {/* 3. 市场价值差 */}
-        {match.prediction && detail && <EdgeAnalysis match={match} detail={detail} />}
+        {/* 3. 市场价值差（实时 Odds API 或静态数据二选一） */}
+        {match.prediction && <EdgeAnalysis match={match} detail={detail} />}
 
         {/* 4. 实时盘口 + Edge 分析 */}
         <section>
