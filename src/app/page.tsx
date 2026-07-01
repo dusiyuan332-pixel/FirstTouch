@@ -9,8 +9,6 @@ import LiveRefresher from "@/components/LiveRefresher";
 import {
   fetchWC2026Matches,
   fetchTopFiveLeagues,
-  fetchWC2026Scorers,
-  computeGroupStandings,
   getTournamentProgress,
   getFocusMatchday,
   type DisplayMatch,
@@ -275,10 +273,9 @@ function SectionHeading({
 export default async function HomePage() {
   const TODAY = new Date().toISOString().slice(0, 10);
 
-  const [allWcMatches, leagueStandings, scorers] = await Promise.all([
+  const [allWcMatches, leagueStandings] = await Promise.all([
     fetchWC2026Matches(PREDICTIONS).catch(() => []),
     fetchTopFiveLeagues().catch(() => []),
-    fetchWC2026Scorers(5).catch(() => []),
   ]);
 
   // 优先取直播中，其次取最近即将开赛的（按开赛时间 ASC）
@@ -295,7 +292,6 @@ export default async function HomePage() {
 
   const liveCount = allWcMatches.filter((m) => m.status === "live").length;
   const featuredMatchIds = hotMatches.map((m) => m.id);
-  const groupStandings = computeGroupStandings(allWcMatches);
   const tournamentProgress = getTournamentProgress(allWcMatches);
   const focusMatchday = getFocusMatchday(allWcMatches, TODAY);
 
@@ -396,9 +392,7 @@ export default async function HomePage() {
         <TournamentCenter
           featuredMatchIds={featuredMatchIds}
           focusMatchday={focusMatchday}
-          groupStandings={groupStandings}
           progress={tournamentProgress}
-          scorers={scorers}
           liveCount={liveCount}
         />
 

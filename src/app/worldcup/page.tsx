@@ -2,6 +2,7 @@ import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import ScheduleMatchCard from "@/components/ScheduleMatchCard";
 import ScheduleDateNav from "@/components/ScheduleDateNav";
+import KnockoutBracket from "@/components/KnockoutBracket";
 import WCScorersWidget from "@/components/WCScorersWidget";
 import {
   fetchWC2026Matches,
@@ -9,6 +10,8 @@ import {
   groupByDate,
   getUniqueDates,
   formatDate,
+  buildKnockoutRounds,
+  getThirdPlaceMatch,
 } from "@/lib/footballDataApi";
 import { PREDICTIONS } from "@/data/wc2026";
 import { computeQuickPrediction } from "@/lib/quickPredict";
@@ -53,6 +56,8 @@ export default async function WorldCupPage() {
   const byDate = groupByDate(visibleMatches);
   const liveCount     = visibleMatches.filter((m) => m.status === "live").length;
   const upcomingCount = visibleMatches.filter((m) => m.status === "upcoming").length;
+  const knockoutRounds = buildKnockoutRounds(allMatches);
+  const thirdPlaceMatch = getThirdPlaceMatch(allMatches);
 
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--ft-bg)" }}>
@@ -112,6 +117,11 @@ export default async function WorldCupPage() {
 
           {/* ── 中间：赛程（max-w-5xl，自然居中）── */}
           <main className="min-w-0 flex-1 space-y-10 md:space-y-12">
+            {/* 淘汰赛晋级树（置顶，使用全量赛程数据） */}
+            {knockoutRounds.length > 0 && (
+              <KnockoutBracket rounds={knockoutRounds} thirdPlace={thirdPlaceMatch} />
+            )}
+
             {visibleMatches.length > 0 ? (
               dates.map((date) => {
                 const matches = byDate.get(date) ?? [];

@@ -48,6 +48,7 @@ export type MatchStage =
   | "Round of 16"
   | "Quarter-final"
   | "Semi-final"
+  | "Third Place"
   | "Final";
 export type RatingType = "STRONG_BUY" | "BUY" | "NEUTRAL" | "AVOID";
 
@@ -131,7 +132,7 @@ function mapStage(stage: string): MatchStage {
     LAST_16:        "Round of 16",
     QUARTER_FINALS: "Quarter-final",
     SEMI_FINALS:    "Semi-final",
-    THIRD_PLACE:    "Semi-final",
+    THIRD_PLACE:    "Third Place",
     FINAL:          "Final",
   };
   return MAP[stage] ?? "Group Stage";
@@ -548,4 +549,52 @@ export function getFocusMatchday(
     isToday: false,
     matches: lastDate ? (byDate.get(lastDate) ?? []) : [],
   };
+}
+
+// ── 淘汰赛晋级树 ─────────────────────────────────────────────────────────────
+
+export const KNOCKOUT_ROUND_META: {
+  stage: MatchStage;
+  label: string;
+  labelEn: string;
+}[] = [
+  { stage: "Round of 32",   label: "三十二强", labelEn: "Round of 32" },
+  { stage: "Round of 16",   label: "十六强",   labelEn: "Round of 16" },
+  { stage: "Quarter-final", label: "八强",     labelEn: "Quarter-finals" },
+  { stage: "Semi-final",    label: "半决赛",   labelEn: "Semi-finals" },
+  { stage: "Final",         label: "决赛",     labelEn: "Final" },
+];
+
+export interface KnockoutRound {
+  stage: MatchStage;
+  label: string;
+  labelEn: string;
+  matches: DisplayMatch[];
+}
+
+/** 按轮次分组淘汰赛赛程（按日期排序） */
+export function buildKnockoutRounds(matches: DisplayMatch[]): KnockoutRound[] {
+  const knockout = matches.filter((m) => m.stage !== "Group Stage" && m.stage !== "Third Place");
+
+  return KNOCKOUT_ROUND_META.map(({ stage, label, labelEn }) => ({
+    stage,
+    label,
+    labelEn,
+    matches: knockout
+      .filter((m) => m.stage === stage)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time) || Number(a.id) - Number(b.id)),
+  })).filter((r) => r.matches.length > 0);
+}
+
+export function getThirdPlaceMatch(matches: DisplayMatch[]): DisplayMatch | null {
+  return matches.find((m) => m.stage === "Third Place") ?? null;
+}
+
+/** 从赛果推断胜者（点球大战 API 可能只给常规时间比分，平局时返回 null） */
+export function getMatchWinner(match: DisplayMatch): DisplayTeam | null {
+  if (!match.score || match.status !== "finished") return null;
+  const { home, away } = match.score;
+  if (home > away) return match.homeTeam;
+  if (away > home) return match.awayTeam;
+  return null;
 }
